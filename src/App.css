@@ -85,9 +85,10 @@
 
 /* Hero Screen */
 .hero-screen {
-  min-height: 100vh;
+  min-height: 50vh;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   position: relative;
   padding: 100px 80px 80px;
   max-width: 100%;
@@ -97,19 +98,28 @@
 
 .hero-logo {
   font-size: 380px;
-  font-weight: 700;
+  font-weight: 400;
   color: #000000;
   line-height: 0.9;
   letter-spacing: -0.04em;
-  margin-right: 100px;
   flex-shrink: 0;
   font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
 }
 
+/* Description Screen */
+.description-screen {
+  min-height: 50vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  position: relative;
+  padding: 0 80px 80px;
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .hero-description {
-  position: absolute;
-  right: 80px;
-  bottom: 80px;
   font-size: 20px;
   font-weight: 400;
   color: #000000;
@@ -124,7 +134,14 @@
 @media (max-width: 1728px) {
   .hero-logo {
     font-size: 320px;
-    margin-right: 80px;
+  }
+  
+  .description-screen {
+    padding: 0 80px 80px;
+  }
+  
+  .hero-description {
+    max-width: 420px;
   }
 }
 
@@ -132,13 +149,14 @@
 @media (max-width: 1512px) {
   .hero-logo {
     font-size: 280px;
-    margin-right: 70px;
+  }
+  
+  .description-screen {
+    padding: 0 70px 70px;
   }
   
   .hero-description {
-    max-width: 420px;
-    right: 70px;
-    bottom: 70px;
+    max-width: 400px;
   }
 }
 
@@ -146,12 +164,6 @@
 @media (max-width: 1440px) {
   .hero-logo {
     font-size: 240px;
-    margin-right: 60px;
-  }
-  
-  .hero-description {
-    font-size: 18px;
-    max-width: 380px;
   }
   
   .header-content {
@@ -162,9 +174,13 @@
     padding: 100px 60px 60px;
   }
   
+  .description-screen {
+    padding: 0 60px 60px;
+  }
+  
   .hero-description {
-    right: 60px;
-    bottom: 60px;
+    font-size: 18px;
+    max-width: 380px;
   }
 }
 
@@ -172,36 +188,37 @@
 @media (max-width: 1024px) {
   .hero-logo {
     font-size: 200px;
-    margin-right: 50px;
+  }
+  
+  .description-screen {
+    padding: 0 50px 50px;
   }
   
   .hero-description {
     max-width: 350px;
-    right: 50px;
-    bottom: 50px;
   }
 }
 
 @media (max-width: 968px) {
   .hero-screen {
-    flex-direction: column;
-    align-items: flex-start;
     padding: 100px 40px 40px;
+    min-height: 50vh;
   }
 
   .hero-logo {
     font-size: 180px;
-    margin-right: 0;
-    margin-bottom: 40px;
+  }
+  
+  .description-screen {
+    padding: 0 40px 40px;
+    min-height: 50vh;
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .hero-description {
-    position: relative;
-    right: auto;
-    bottom: auto;
     max-width: 100%;
     text-align: left;
-    margin-top: 20px;
   }
 }
 
@@ -225,17 +242,22 @@
 
   .hero-screen {
     padding: 80px 30px 30px;
+    min-height: 50vh;
   }
 
   .hero-logo {
     font-size: 120px;
     letter-spacing: -0.03em;
   }
+  
+  .description-screen {
+    padding: 0 30px 30px;
+    min-height: 50vh;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
 
   .hero-description {
-    position: relative;
-    right: auto;
-    bottom: auto;
     font-size: 16px;
     text-align: left;
     max-width: 100%;

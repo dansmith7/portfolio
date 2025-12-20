@@ -17,6 +17,8 @@ function App() {
       <main className="main">
         <section className="hero-screen">
           <div className="hero-logo">©BARONIO</div>
+        </section>
+        <section className="description-screen">
           <div className="hero-description">
             UI/UX Designer indipendente. Collaboro con studi di design, startup e aziende, con un forte focus su user experience, web design art direction e design systems
           </div>
