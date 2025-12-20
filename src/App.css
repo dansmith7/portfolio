@@ -1,0 +1,244 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+  color: #000000;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* PP Neue Montreal font - используйте Inter как замену до получения файлов шрифта */
+/* Для использования PP Neue Montreal добавьте файлы шрифта в папку /public/fonts/ 
+   и раскомментируйте @font-face ниже */
+/*
+@font-face {
+  font-family: 'PP Neue Montreal';
+  src: url('/fonts/PpNeueMontreal-Regular.woff2') format('woff2'),
+       url('/fonts/PpNeueMontreal-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* Header */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: #f5f5f5;
+}
+
+.header-content {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 40px 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-name {
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000;
+  letter-spacing: 0.01em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+.nav {
+  display: flex;
+  gap: 40px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  transition: opacity 0.2s;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+.nav a:hover {
+  opacity: 0.6;
+}
+
+/* Main */
+.main {
+  flex: 1;
+  width: 100%;
+  padding: 0;
+  margin-top: 0;
+}
+
+/* Hero Screen */
+.hero-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 100px 80px 80px;
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero-logo {
+  font-size: 380px;
+  font-weight: 700;
+  color: #000000;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin-right: 100px;
+  flex-shrink: 0;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+.hero-description {
+  position: absolute;
+  right: 80px;
+  bottom: 80px;
+  font-size: 20px;
+  font-weight: 400;
+  color: #000000;
+  line-height: 1.6;
+  max-width: 480px;
+  letter-spacing: -0.01em;
+  text-align: right;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+/* MacBook Pro 16" (1728x1117) и меньше */
+@media (max-width: 1728px) {
+  .hero-logo {
+    font-size: 320px;
+    margin-right: 80px;
+  }
+}
+
+/* MacBook Pro 14" (1512x982) и меньше */
+@media (max-width: 1512px) {
+  .hero-logo {
+    font-size: 280px;
+    margin-right: 70px;
+  }
+  
+  .hero-description {
+    max-width: 420px;
+    right: 70px;
+    bottom: 70px;
+  }
+}
+
+/* MacBook Air 13" (1440x900) и меньше */
+@media (max-width: 1440px) {
+  .hero-logo {
+    font-size: 240px;
+    margin-right: 60px;
+  }
+  
+  .hero-description {
+    font-size: 18px;
+    max-width: 380px;
+  }
+  
+  .header-content {
+    padding: 35px 60px;
+  }
+  
+  .hero-screen {
+    padding: 100px 60px 60px;
+  }
+  
+  .hero-description {
+    right: 60px;
+    bottom: 60px;
+  }
+}
+
+/* Планшеты и меньше */
+@media (max-width: 1024px) {
+  .hero-logo {
+    font-size: 200px;
+    margin-right: 50px;
+  }
+  
+  .hero-description {
+    max-width: 350px;
+    right: 50px;
+    bottom: 50px;
+  }
+}
+
+@media (max-width: 968px) {
+  .hero-screen {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 100px 40px 40px;
+  }
+
+  .hero-logo {
+    font-size: 180px;
+    margin-right: 0;
+    margin-bottom: 40px;
+  }
+
+  .hero-description {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    max-width: 100%;
+    text-align: left;
+    margin-top: 20px;
+  }
+}
+
+/* Мобильные устройства */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 25px 30px;
+  }
+
+  .header-name {
+    font-size: 14px;
+  }
+
+  .nav {
+    gap: 25px;
+  }
+
+  .nav a {
+    font-size: 14px;
+  }
+
+  .hero-screen {
+    padding: 80px 30px 30px;
+  }
+
+  .hero-logo {
+    font-size: 120px;
+    letter-spacing: -0.03em;
+  }
+
+  .hero-description {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    font-size: 16px;
+    text-align: left;
+    max-width: 100%;
+  }
+}
+
