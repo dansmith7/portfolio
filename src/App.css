@@ -90,7 +90,7 @@
   align-items: center;
   justify-content: flex-start;
   position: relative;
-  padding: 100px 80px 80px;
+  padding: 80px 80px 60px;
   max-width: 100%;
   margin: 0 auto;
   width: 100%;
@@ -108,12 +108,12 @@
 
 /* Description Screen */
 .description-screen {
-  min-height: 50vh;
+  min-height: auto;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
   position: relative;
-  padding: 0 80px 80px;
+  padding: 38px 80px 60px;
   max-width: 100%;
   margin: 0 auto;
   width: 100%;
@@ -130,6 +130,286 @@
   font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
 }
 
+/* Video Screen */
+.video-screen {
+  width: 100%;
+  position: relative;
+  background-color: #f5f5f5;
+}
+
+.showreel {
+  width: 100%;
+  height: 150vh;
+  max-height: 1117px; /* Максимальная высота MacBook Pro 16" */
+  position: relative;
+  overflow: hidden;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Works Section */
+.works-section {
+  width: 100%;
+  background-color: #f5f5f5;
+  padding: 80px 80px 50px;
+  position: relative;
+}
+
+.works-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.works-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #000000;
+  margin-bottom: 60px;
+}
+
+.works-header {
+  margin-bottom: 30px;
+}
+
+.works-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.works-title-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.works-label {
+  font-size: 130px;
+  font-weight: 400;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+  line-height: 1;
+}
+
+.works-label-second {
+  margin-top: 0;
+  margin-left: 60px; /* Отступ как красная строка */
+}
+
+.works-title-right {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 8px;
+}
+
+.works-year {
+  font-size: 130px;
+  font-weight: 400;
+  color: #000000;
+  letter-spacing: -0.02em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+  line-height: 1;
+}
+
+.works-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.work-item {
+  padding: 30px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.work-item:last-child {
+  border-bottom: none;
+}
+
+.work-item:hover {
+  opacity: 0.6;
+}
+
+.work-title {
+  font-size: 24px;
+  font-weight: 400;
+  color: #000000;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+.work-tags {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+  letter-spacing: 0.01em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+/* Projects Grid Section */
+.projects-grid-section {
+  width: 100%;
+  background-color: #f5f5f5;
+  padding: 50px 80px 80px;
+  position: relative;
+}
+
+.projects-grid-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.project-card {
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.project-card:hover {
+  opacity: 0.7;
+}
+
+.project-image {
+  width: 100%;
+  aspect-ratio: 4 / 3.2;
+  background-color: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+
+.project-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-info {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.project-name {
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000;
+  letter-spacing: -0.01em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+.project-category {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+  letter-spacing: 0.01em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+.project-number {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+  letter-spacing: 0.01em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+  margin-top: 4px;
+}
+
+/* Logos Marquee Section */
+.logos-marquee-section {
+  width: 100%;
+  background-color: #19261c;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding-top: 30px;
+  padding-bottom: 60px;
+}
+
+.logos-marquee {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.logos-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 120px;
+  animation: marquee 40s linear infinite;
+  will-change: transform;
+  width: fit-content;
+  height: 80px;
+}
+
+.logo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 80px;
+  padding: 0 20px;
+}
+
+.logo-image {
+  height: 100%;
+  width: auto;
+  max-width: 250px;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.logos-divider-container {
+  width: 100%;
+  padding: 0 80px;
+  margin-top: 60px;
+  flex-shrink: 0;
+}
+
+.logos-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #ffffff;
+  opacity: 0.3;
+}
+
 /* MacBook Pro 16" (1728x1117) и меньше */
 @media (max-width: 1728px) {
   .hero-logo {
@@ -137,11 +417,15 @@
   }
   
   .description-screen {
-    padding: 0 80px 80px;
+    padding: 38px 80px 60px;
   }
   
   .hero-description {
     max-width: 420px;
+  }
+  
+  .showreel {
+    max-height: 1117px; /* MacBook Pro 16" */
   }
 }
 
@@ -152,11 +436,15 @@
   }
   
   .description-screen {
-    padding: 0 70px 70px;
+    padding: 38px 70px 60px;
   }
   
   .hero-description {
     max-width: 400px;
+  }
+  
+  .showreel {
+    max-height: 982px; /* MacBook Pro 14" */
   }
 }
 
@@ -171,16 +459,65 @@
   }
   
   .hero-screen {
-    padding: 100px 60px 60px;
+    padding: 80px 60px 50px;
   }
   
   .description-screen {
-    padding: 0 60px 60px;
+    padding: 38px 60px 50px;
   }
   
   .hero-description {
     font-size: 18px;
     max-width: 380px;
+  }
+  
+  .showreel {
+    max-height: 900px; /* MacBook Air 13" */
+  }
+  
+  .works-section {
+    padding: 60px 60px;
+  }
+  
+  .works-label,
+  .works-year {
+    font-size: 110px;
+  }
+  
+  .works-label-second {
+    margin-left: 50px;
+  }
+  
+  .work-title {
+    font-size: 22px;
+  }
+  
+  .projects-grid-section {
+    padding: 60px 60px;
+  }
+  
+  .projects-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .logos-marquee-section {
+    padding: 70px 0;
+  }
+  
+  .logos-divider-container {
+    padding: 0 60px;
+  }
+  
+  .logo-item {
+    height: 70px;
+  }
+  
+  .logo-image {
+    max-width: 220px;
+  }
+  
+  .logos-marquee-track {
+    gap: 100px;
   }
 }
 
@@ -191,17 +528,62 @@
   }
   
   .description-screen {
-    padding: 0 50px 50px;
+    padding: 38px 50px 50px;
   }
   
   .hero-description {
     max-width: 350px;
   }
+  
+  .works-section {
+    padding: 60px 50px;
+  }
+  
+  .works-label,
+  .works-year {
+    font-size: 95px;
+  }
+  
+  .works-label-second {
+    margin-left: 40px;
+  }
+  
+  .work-title {
+    font-size: 20px;
+  }
+  
+  .projects-grid-section {
+    padding: 60px 50px;
+  }
+  
+  .projects-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .logos-marquee-section {
+    padding: 60px 0;
+  }
+  
+  .logos-divider-container {
+    padding: 0 50px;
+  }
+  
+  .logo-item {
+    height: 60px;
+  }
+  
+  .logo-image {
+    max-width: 180px;
+  }
+  
+  .logos-marquee-track {
+    gap: 80px;
+  }
 }
 
 @media (max-width: 968px) {
   .hero-screen {
-    padding: 100px 40px 40px;
+    padding: 80px 40px 40px;
     min-height: 50vh;
   }
 
@@ -210,8 +592,7 @@
   }
   
   .description-screen {
-    padding: 0 40px 40px;
-    min-height: 50vh;
+    padding: 38px 40px 40px;
     align-items: flex-start;
     justify-content: flex-start;
   }
@@ -219,6 +600,76 @@
   .hero-description {
     max-width: 100%;
     text-align: left;
+  }
+  
+  .showreel {
+    height: 75vh;
+    max-height: 900px; /* Максимальная высота MacBook Air 13" для мобильных */
+  }
+  
+  .works-section {
+    padding: 50px 40px;
+  }
+  
+  .works-divider {
+    margin-bottom: 40px;
+  }
+  
+  .works-header {
+    margin-bottom: 20px;
+  }
+  
+  .works-section {
+    padding-bottom: 40px;
+  }
+  
+  .projects-grid-section {
+    padding-top: 40px;
+  }
+  
+  .works-label,
+  .works-year {
+    font-size: 80px;
+  }
+  
+  .works-label-second {
+    margin-left: 30px;
+  }
+  
+  .work-item {
+    padding: 25px 0;
+  }
+  
+  .work-title {
+    font-size: 18px;
+  }
+  
+  .projects-grid-section {
+    padding: 50px 40px;
+  }
+  
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .logos-marquee-section {
+    padding: 50px 0;
+  }
+  
+  .logos-divider-container {
+    padding: 0 40px;
+  }
+  
+  .logo-item {
+    height: 50px;
+  }
+  
+  .logo-image {
+    max-width: 150px;
+  }
+  
+  .logos-marquee-track {
+    gap: 60px;
   }
 }
 
@@ -241,7 +692,7 @@
   }
 
   .hero-screen {
-    padding: 80px 30px 30px;
+    padding: 60px 30px 30px;
     min-height: 50vh;
   }
 
@@ -251,8 +702,7 @@
   }
   
   .description-screen {
-    padding: 0 30px 30px;
-    min-height: 50vh;
+    padding: 38px 30px 30px;
     align-items: flex-start;
     justify-content: flex-start;
   }
@@ -261,6 +711,289 @@
     font-size: 16px;
     text-align: left;
     max-width: 100%;
+  }
+  
+  .showreel {
+    height: 75vh;
+    max-height: 900px; /* Максимальная высота MacBook Air 13" для мобильных */
+  }
+  
+  .works-section {
+    padding: 40px 30px;
+  }
+  
+  .works-divider {
+    margin-bottom: 30px;
+  }
+  
+  .works-header {
+    margin-bottom: 20px;
+  }
+  
+  .works-section {
+    padding-bottom: 60px;
+  }
+  
+  .projects-grid-section {
+    padding: 30px 30px 40px;
+  }
+  
+  .works-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .works-title-right {
+    align-self: flex-start;
+    padding-bottom: 0;
+  }
+  
+  .works-label,
+  .works-year {
+    font-size: 65px;
+  }
+  
+  .works-label-second {
+    margin-left: 20px;
+  }
+  
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .project-info {
+    padding: 15px;
+  }
+  
+  .project-name {
+    font-size: 14px;
+  }
+  
+  .project-category,
+  .project-number {
+    font-size: 12px;
+  }
+  
+  .logos-marquee-section {
+    padding: 40px 0;
+  }
+  
+  .logos-divider-container {
+    padding: 0 30px;
+  }
+  
+  .logo-item {
+    height: 40px;
+    padding: 0 15px;
+  }
+  
+  .logo-image {
+    max-width: 120px;
+  }
+  
+  .logos-marquee-track {
+    gap: 40px;
+  }
+}
+
+/* Footer */
+.footer {
+  width: 100%;
+  background-color: #19261c;
+  color: #ffffff;
+  position: relative;
+}
+
+.footer-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #ffffff;
+  opacity: 0.3;
+}
+
+.footer-content {
+  width: 100%;
+  margin: 0 auto;
+  padding: 60px 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-brand {
+  font-size: 18px;
+  font-weight: 400;
+  color: #ffffff;
+}
+
+.footer-credits {
+  font-size: 14px;
+  font-weight: 400;
+  color: #ffffff;
+  opacity: 0.8;
+}
+
+.footer-center {
+  display: flex;
+  align-items: center;
+}
+
+.footer-email {
+  font-size: 16px;
+  font-weight: 400;
+  color: #ffffff;
+}
+
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.footer-copyright {
+  font-size: 16px;
+  font-weight: 400;
+  color: #ffffff;
+}
+
+.footer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.footer-nav a {
+  font-size: 16px;
+  font-weight: 400;
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.footer-nav a:hover {
+  opacity: 0.7;
+}
+
+.footer-logo-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 80px 20px;
+}
+
+.footer-logo {
+  width: 100%;
+  font-size: 300px;
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-family: 'PP Neue Montreal', 'Inter', Arial, sans-serif;
+  text-align: center;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* Footer адаптивность */
+@media (max-width: 1728px) {
+  .footer-content {
+    padding: 50px 60px;
+  }
+  
+  .footer-logo-container {
+    padding: 0 60px 20px;
+  }
+  
+  .footer-logo {
+    font-size: 250px;
+  }
+}
+
+@media (max-width: 1440px) {
+  .footer-content {
+    padding: 50px 50px;
+  }
+  
+  .footer-logo-container {
+    padding: 0 50px 20px;
+  }
+  
+  .footer-logo {
+    font-size: 220px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .footer-content {
+    padding: 40px 40px;
+    flex-direction: column;
+    gap: 30px;
+    align-items: flex-start;
+  }
+  
+  .footer-center {
+    align-self: flex-start;
+  }
+  
+  .footer-right {
+    align-items: flex-start;
+  }
+  
+  .footer-nav {
+    align-items: flex-start;
+  }
+  
+  .footer-logo-container {
+    padding: 0 40px 20px;
+  }
+  
+  .footer-logo {
+    font-size: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    padding: 30px 30px;
+    gap: 25px;
+  }
+  
+  .footer-brand {
+    font-size: 16px;
+  }
+  
+  .footer-credits {
+    font-size: 12px;
+  }
+  
+  .footer-email {
+    font-size: 14px;
+  }
+  
+  .footer-copyright {
+    font-size: 14px;
+  }
+  
+  .footer-nav a {
+    font-size: 14px;
+  }
+  
+  .footer-logo-container {
+    padding: 0 30px 20px;
+  }
+  
+  .footer-logo {
+    font-size: 100px;
+    letter-spacing: -0.03em;
   }
 }
 
