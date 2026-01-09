@@ -1,4 +1,5 @@
 import '../App.css'
+import { Link } from 'react-router-dom'
 
 function Work() {
   return (
@@ -22,7 +23,7 @@ function Work() {
       <section className="projects-grid-section">
         <div className="projects-grid-container">
           <div className="projects-grid">
-            <div className="project-card">
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="SERIE A" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -31,8 +32,8 @@ function Work() {
                 <div className="project-category">UX/UI Design • Design System</div>
                 <div className="project-number">26</div>
               </div>
-            </div>
-            <div className="project-card">
+            </Link>
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="ATLANTIS" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -41,8 +42,8 @@ function Work() {
                 <div className="project-category">E-Commerce UX/UI Design</div>
                 <div className="project-number">25</div>
               </div>
-            </div>
-            <div className="project-card">
+            </Link>
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="COMUNE DI BRESCIA" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -51,8 +52,8 @@ function Work() {
                 <div className="project-category">Website Design</div>
                 <div className="project-number">24</div>
               </div>
-            </div>
-            <div className="project-card">
+            </Link>
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="ISTITUTO NAZIONALE DI GEOFISICA" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -61,8 +62,8 @@ function Work() {
                 <div className="project-category">UX/UI Design</div>
                 <div className="project-number">23</div>
               </div>
-            </div>
-            <div className="project-card">
+            </Link>
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="STEMA" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -71,8 +72,8 @@ function Work() {
                 <div className="project-category">Website • UX/UI Design</div>
                 <div className="project-number">22</div>
               </div>
-            </div>
-            <div className="project-card">
+            </Link>
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="SMANAPP" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -81,8 +82,8 @@ function Work() {
                 <div className="project-category">UX/UI Design</div>
                 <div className="project-number">21</div>
               </div>
-            </div>
-            <div className="project-card">
+            </Link>
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="Project 7" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -91,8 +92,8 @@ function Work() {
                 <div className="project-category">Website</div>
                 <div className="project-number">20</div>
               </div>
-            </div>
-            <div className="project-card">
+            </Link>
+            <Link to="/work/ingv" className="project-card">
               <div className="project-image">
                 <img src="/projects/2025-12-21%2001.48.57.jpg" alt="Project 8" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
@@ -101,7 +102,7 @@ function Work() {
                 <div className="project-category">Website</div>
                 <div className="project-number">19</div>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>

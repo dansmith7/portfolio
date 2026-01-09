@@ -57,7 +57,7 @@ function About() {
             <h2 className="about-section-title">(COLLABORAZIONI)</h2>
             <div className="about-section-content">
               <p className="about-text">
-                Sono sempre aperto a nuove collaborazioni o anche solo a una chiacchierata per conoscerci meglio a <a href="mailto:info@paolobaronio.it" className="about-link">info@paolobaronio.it</a>
+                Sono sempre aperto a nuove collaborazioni o anche solo a una chiacchierata per conoscerci meglio a <a href="mailto:info@anidesigns.com" className="about-link">info@anidesigns.com</a>
               </p>
             </div>
           </div>
