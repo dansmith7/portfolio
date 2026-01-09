@@ -9,10 +9,11 @@ import ProjectDetail from './pages/ProjectDetail'
 function CustomCursor() {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
+  const [cursorType, setCursorType] = useState('open') // 'open' или 'arrow'
   const [isVisible, setIsVisible] = useState(false)
   const [hoverColor, setHoverColor] = useState('#FFE5B4') // светло-желтый по умолчанию
 
-  // Массив цветов для плашки
+  // Массив цветов для плашки и стрелки
   const cursorColors = [
     '#FFE5B4', // светло-желтый
     '#FFA07A', // оранжевый
@@ -36,52 +37,89 @@ function CustomCursor() {
     let currentX = 0
     let currentY = 0
 
+    let cursorUpdateTimeout = null
+    
     const updateCursor = (e) => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame)
-      }
+      // Throttling для updateCursor, чтобы не блокировать скролл
+      if (cursorUpdateTimeout) return
       
-      const targetX = e.clientX
-      const targetY = e.clientY
-      
-      const animate = () => {
-        // Увеличиваем коэффициент для менее плавного движения
-        currentX += (targetX - currentX) * 0.35
-        currentY += (targetY - currentY) * 0.35
-        setPosition({ x: currentX, y: currentY })
+      cursorUpdateTimeout = requestAnimationFrame(() => {
+        cursorUpdateTimeout = null
         
-        if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
-          animationFrame = requestAnimationFrame(animate)
-        } else {
-          animationFrame = null
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame)
         }
-      }
-      
-      animationFrame = requestAnimationFrame(animate)
+        
+        const targetX = e.clientX
+        const targetY = e.clientY
+        
+        const animate = () => {
+          // Увеличиваем коэффициент для менее плавного движения
+          currentX += (targetX - currentX) * 0.35
+          currentY += (targetY - currentY) * 0.35
+          setPosition({ x: currentX, y: currentY })
+          
+          if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
+            animationFrame = requestAnimationFrame(animate)
+          } else {
+            animationFrame = null
+          }
+        }
+        
+        animationFrame = requestAnimationFrame(animate)
+      })
     }
 
     let lastHoveredElement = null
+    let lastMouseX = 0
+    let lastMouseY = 0
+    let hoverTimeout = null
 
-    const checkHover = (e) => {
-      const target = e.target
+    const checkHover = (x, y) => {
+      // Используем актуальные координаты мыши для проверки hover
+      const target = document.elementFromPoint(x, y)
       if (!target) {
         setIsHovering(false)
+        setCursorType('open')
         lastHoveredElement = null
         return
       }
       
-      const clickableElement = target.closest('a') || 
+      // Определяем большие элементы (карточки проектов)
+      const largeElement = target.closest('.project-card')
+      
+      // Определяем кнопки, которые должны показывать стрелку
+      const arrowButton = target.closest('.see-other-works-button') ||
+                         target.closest('.email-button') ||
+                         target.closest('.telegram-button') ||
+                         target.closest('.contact-button')
+      
+      // Определяем текстовые ссылки
+      const textLink = target.closest('a') && !target.closest('.project-card') && 
+                       !target.closest('.see-other-works-button')
+      
+      const clickableElement = largeElement || 
+                              textLink ||
+                              arrowButton ||
                               target.closest('button') ||
-                              target.closest('.project-card') ||
-                              target.closest('.see-other-works-button') ||
-                              target.closest('.contact-button') ||
                               target.closest('.input-email') ||
-                              target.closest('.telegram-button') ||
                               target.closest('[role="button"]') ||
                               (target.tagName === 'A' ? target : null) ||
                               (target.tagName === 'BUTTON' ? target : null)
       
-      const isClickable = !!clickableElement || window.getComputedStyle(target).cursor === 'pointer'
+      // Избегаем getComputedStyle если возможно, так как это может быть медленно
+      const isClickable = !!clickableElement
+      
+      // Определяем тип курсора
+      if (isClickable) {
+        if (largeElement) {
+          setCursorType('open')
+        } else if (arrowButton || textLink || (target.tagName === 'A' && !target.closest('.project-card'))) {
+          setCursorType('arrow')
+        } else {
+          setCursorType('open')
+        }
+      }
       
       // Если навели на новый элемент, меняем цвет
       if (isClickable && clickableElement !== lastHoveredElement) {
@@ -92,36 +130,51 @@ function CustomCursor() {
       
       if (!isClickable) {
         lastHoveredElement = null
+        setCursorType('open')
       }
       
       setIsHovering(isClickable)
     }
 
+
+    // НЕ отслеживаем скролл, чтобы не блокировать его
+    // Просто проверяем hover при движении мыши
+    const handleMouseMove = (e) => {
+      lastMouseX = e.clientX
+      lastMouseY = e.clientY
+      updateCursor(e)
+      
+      // Проверяем hover сразу через requestAnimationFrame для плавности
+      if (hoverTimeout) cancelAnimationFrame(hoverTimeout)
+      hoverTimeout = requestAnimationFrame(() => {
+        checkHover(lastMouseX, lastMouseY)
+        hoverTimeout = null
+      })
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    
     const handleMouseLeave = () => {
       setIsVisible(false)
+      setIsHovering(false)
     }
-
+    
     const handleMouseEnter = () => {
       setIsVisible(true)
     }
-
-    window.addEventListener('mousemove', updateCursor)
-    document.addEventListener('mouseover', checkHover)
-    document.addEventListener('mouseout', (e) => {
-      if (!e.relatedTarget || !e.target.contains(e.relatedTarget)) {
-        setIsHovering(false)
-      }
-    })
-    document.addEventListener('mouseleave', handleMouseLeave)
-    document.addEventListener('mouseenter', handleMouseEnter)
+    
+    document.addEventListener('mouseleave', handleMouseLeave, { passive: true })
+    document.addEventListener('mouseenter', handleMouseEnter, { passive: true })
 
     return () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame)
       }
-      window.removeEventListener('mousemove', updateCursor)
-      document.removeEventListener('mouseover', checkHover)
-      document.removeEventListener('mouseout', handleMouseLeave)
+      if (cursorUpdateTimeout) {
+        cancelAnimationFrame(cursorUpdateTimeout)
+      }
+      if (hoverTimeout) cancelAnimationFrame(hoverTimeout)
+      window.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseleave', handleMouseLeave)
       document.removeEventListener('mouseenter', handleMouseEnter)
     }
@@ -131,18 +184,23 @@ function CustomCursor() {
 
   return (
     <div 
-      className={`custom-cursor ${isHovering ? 'cursor-hover' : ''}`}
+      className={`custom-cursor ${isHovering ? 'cursor-hover' : ''} ${isHovering && cursorType === 'arrow' ? 'cursor-arrow' : ''}`}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
         backgroundColor: isHovering ? hoverColor : '#000000',
       }}
     >
-      {isHovering && (
+      {isHovering && cursorType === 'open' && (
         <>
           <span className="cursor-dot"></span>
           <span className="cursor-text">open</span>
         </>
+      )}
+      {isHovering && cursorType === 'arrow' && (
+        <svg className="cursor-arrow-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12L12 4M12 4H6M12 4V10" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       )}
     </div>
   )

@@ -24,7 +24,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
-  overflow-x: hidden;
+  overflow: visible;
   position: relative;
 }
 
@@ -43,11 +43,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .custom-cursor.cursor-hover {
   width: auto;
+  max-width: 150px;
   height: 30px;
   border-radius: 8px;
   padding-left: 14px;
@@ -56,9 +57,41 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(0, 0, 0, 0.1);
   transform: translate(-50%, -50%);
-  transform-origin: center center;
+  transform-origin: left center;
   justify-content: flex-start;
   box-sizing: border-box;
+  animation: expandFromDot 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  overflow: visible;
+}
+
+@keyframes expandFromDot {
+  0% {
+    max-width: 8px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  100% {
+    max-width: 150px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+.custom-cursor:not(.cursor-hover) {
+  animation: collapseToDot 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes collapseToDot {
+  0% {
+    max-width: 150px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  100% {
+    max-width: 8px;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 .cursor-dot {
@@ -89,8 +122,8 @@
   text-transform: lowercase;
   letter-spacing: 0.03em;
   opacity: 0;
-  transform: translateX(-8px);
-  transition: opacity 0.3s ease 0.15s, transform 0.3s ease 0.15s;
+  transform: translateX(-10px) scale(0.8);
+  transition: opacity 0.2s ease 0.2s, transform 0.2s ease 0.2s;
   white-space: nowrap;
   margin-left: 10px;
   position: relative;
@@ -104,7 +137,72 @@
 
 .custom-cursor.cursor-hover .cursor-text {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateX(0) scale(1);
+}
+
+/* Arrow cursor styles */
+.custom-cursor.cursor-arrow.cursor-hover {
+  width: 32px;
+  height: 32px;
+  max-width: 32px;
+  border-radius: 8px;
+  padding: 0;
+  gap: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: expandArrow 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes expandArrow {
+  0% {
+    width: 8px;
+    height: 8px;
+    max-width: 8px;
+    border-radius: 50%;
+  }
+  100% {
+    width: 32px;
+    height: 32px;
+    max-width: 32px;
+    border-radius: 8px;
+  }
+}
+
+.custom-cursor.cursor-arrow:not(.cursor-hover) {
+  animation: collapseArrow 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes collapseArrow {
+  0% {
+    width: 32px;
+    height: 32px;
+    max-width: 32px;
+    border-radius: 8px;
+  }
+  100% {
+    width: 8px;
+    height: 8px;
+    max-width: 8px;
+    border-radius: 50%;
+  }
+}
+
+.cursor-arrow-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s ease 0.2s, transform 0.2s ease 0.2s;
+}
+
+.custom-cursor.cursor-arrow.cursor-hover .cursor-arrow-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.custom-cursor.cursor-arrow.cursor-hover .cursor-arrow-icon path {
+  stroke: #000000;
 }
 
 @keyframes fadeIn {
@@ -169,11 +267,13 @@
   width: 100%;
   padding: 0;
   margin-top: 0;
+  overflow: visible;
+  min-height: auto;
 }
 
 /* Hero Screen */
 .hero-screen {
-  min-height: 50vh;
+  min-height: calc(100vh + 1px);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -221,23 +321,26 @@
 /* Video Screen */
 .video-screen {
   width: 100%;
+  min-height: 100vh;
   position: relative;
   background-color: #ffffff;
+  padding: 10vh 0;
 }
 
 .showreel {
   width: 100%;
-  height: 150vh;
-  max-height: 1117px; /* Максимальная высота MacBook Pro 16" */
+  min-height: 100vh;
+  height: auto;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .video {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   object-fit: cover;
   display: block;
+  pointer-events: none;
 }
 
 /* Works Section */
@@ -829,7 +932,7 @@
   }
   
   .showreel {
-    max-height: 1117px; /* MacBook Pro 16" */
+    min-height: 100vh;
   }
 }
 
@@ -848,7 +951,7 @@
   }
   
   .showreel {
-    max-height: 982px; /* MacBook Pro 14" */
+    min-height: 100vh;
   }
 }
 
@@ -876,7 +979,7 @@
   }
   
   .showreel {
-    max-height: 900px; /* MacBook Air 13" */
+    min-height: 100vh;
   }
   
   .works-section {
@@ -1130,7 +1233,7 @@
 @media (max-width: 968px) {
   .hero-screen {
     padding: 80px 40px 40px;
-    min-height: 50vh;
+    min-height: calc(100vh + 1px);
   }
 
   .hero-logo {
@@ -1149,8 +1252,11 @@
   }
   
   .showreel {
-    height: 75vh;
-    max-height: 900px; /* Максимальная высота MacBook Air 13" для мобильных */
+    min-height: 100vh;
+  }
+  
+  .video {
+    height: 100vh;
   }
   
   .works-section {
@@ -1328,7 +1434,7 @@
 
   .hero-screen {
     padding: 60px 30px 30px;
-    min-height: 50vh;
+    min-height: calc(100vh + 1px);
   }
 
   .hero-logo {
@@ -1349,8 +1455,11 @@
   }
   
   .showreel {
-    height: 75vh;
-    max-height: 900px; /* Максимальная высота MacBook Air 13" для мобильных */
+    min-height: 100vh;
+  }
+  
+  .video {
+    height: 100vh;
   }
   
   .works-section {
