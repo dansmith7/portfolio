@@ -1,5 +1,9 @@
 import '../App.css'
 import { useParams, Link } from 'react-router-dom'
+import parallelScreen4 from '../assets/images/68d85ba814a43e6ce6e89ce6_parallel-screen-4.jpg'
+import parallelScreen5 from '../assets/images/68d85ba9c9027aee8bcda2f6_parallel-screen-5.jpg'
+import parallelScreen51 from '../assets/images/68d85ba9c9027aee8bcda2f6_parallel-screen-5 (1).jpg'
+import parallelScreen6 from '../assets/images/68d85ba578ad30d1cb1ca91a_parallel-screen 6.jpg'
 
 function ProjectDetail() {
   const { projectId } = useParams()
@@ -7,198 +11,135 @@ function ProjectDetail() {
   // Данные проекта (в будущем можно вынести в отдельный файл или API)
   const projectData = {
     'ingv': {
-      title: 'INGV',
-      category: 'Civic & Public',
-      year: '©2024',
-      cliente: 'Istituto Nazionale di Geofisica',
-      committente: 'Fightbean',
-      role: 'Product Designer',
-      description: [
-        "Per l'Istituto Nazionale di Geofisica e Vulcanologia abbiamo sviluppato una piattaforma dedicata alla visualizzazione degli eventi sismici su mappa e alla consultazione delle sorgenti estese per i tecnici.",
-        "La sfida principale è stata tradurre contenuti scientifici complessi in un'esperienza chiara e accessibile, mantenendo al tempo stesso un alto livello di precisione e affidabilità."
-      ],
-      myRole: [
-        "Mi sono occupato del design dell'interfaccia e del design system, lavorando per organizzare e priorizzare le informazioni scientifiche in modo efficace. Ho partecipato ai workshop e alle fasi di testing per garantire un'esperienza utente ottimale, bilanciando rigore tecnico e chiarezza comunicativa."
-      ],
-      relatedProjects: [
-        { name: 'SERIE A', category: 'UX/UI Design • Design System', link: '/work/serie-a' },
-        { name: 'SMANAPP', category: 'UX/UI Design', link: '/work/smanapp' }
-      ]
+      title: 'SERIE A',
+      description: 'Logo and visual identity design for Serie A, providing a personalised mentorship service for young students by building a role model relationships with more experienced student mentors in academic life.',
+      concept: 'Serie A wanted to communicate its premium and sophisticated soul. The concept is inspired by the name, which symbolises a path of growth and parallel accompaniment of the mentor and mentee, brought back to the graphic sign of growth and rise.',
+      requirements: 'Serie A needed a strong enough visual identity to differentiate itself in a rather crowded market environment. Premium, but not snobby, trustworthy, but not cold.',
+      output: 'Initial applications included flyers, posters, pitch decks and social media graphics. The identity ensures flexibility across online and offline media, ensuring strong immediate recognisability.',
+      image: '/projects/2025-12-21%2001.48.57.jpg'
     }
   }
   
   const project = projectData[projectId] || projectData['ingv']
   
   return (
-    <div className="project-detail-page">
-      <section className="project-hero">
-        <div className="project-container">
-          <div className="project-divider"></div>
-          <div className="project-header">
-            <div className="project-title-section">
-              <div className="project-category-label">{project.category}</div>
-              <h1 className="project-title">{project.title}</h1>
-            </div>
-            <div className="project-year">{project.year}</div>
-          </div>
-        </div>
-      </section>
+    <div className="project-detail-page page-fade-in">
+      <section className="project-detail-main">
+        <div className="project-detail-container">
+          <div className="project-detail-content">
+            <div className="project-detail-left">
+              <h1 className="project-detail-title">{project.title}</h1>
+              
+              <div className="project-detail-description">
+                <p>{project.description}</p>
+              </div>
 
-      <section className="project-info-section">
-        <div className="project-container">
-          <div className="project-info-grid">
-            <div className="project-info-item">
-              <div className="project-info-label">Cliente:</div>
-              <div className="project-info-value">{project.cliente}</div>
-              <div className="project-download-content">
-                <p className="project-download-text">Download project presentation</p>
-                <a href="#" className="project-download-button" download>
-                  Download
-                </a>
+              <div className="project-detail-section">
+                <h2 className="project-detail-section-title">Visual identity /25</h2>
+              </div>
+
+              <div className="project-detail-section">
+                <div className="project-detail-section-header">
+                  <div className="project-detail-section-divider"></div>
+                  <h3 className="project-detail-section-label">CONCEPT</h3>
+                </div>
+                <div className="project-detail-section-content">
+                  <p>{project.concept}</p>
+                </div>
+              </div>
+
+              <div className="project-detail-section">
+                <div className="project-detail-section-header">
+                  <div className="project-detail-section-divider"></div>
+                  <h3 className="project-detail-section-label">REQUIREMENTS</h3>
+                </div>
+                <div className="project-detail-section-content">
+                  <p>{project.requirements}</p>
+                </div>
+              </div>
+
+              <div className="project-detail-section">
+                <div className="project-detail-section-header">
+                  <div className="project-detail-section-divider"></div>
+                  <h3 className="project-detail-section-label">OUTPUT</h3>
+                </div>
+                <div className="project-detail-section-content">
+                  <p>{project.output}</p>
+                </div>
               </div>
             </div>
-            <div className="project-info-item">
-              <div className="project-info-label">Committente:</div>
-              <div className="project-info-value">{project.committente}</div>
-            </div>
-            <div className="project-info-item">
-              <div className="project-info-label">Il mio ruolo:</div>
-              <div className="project-info-value">{project.role}</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="project-media-section">
-        <div className="project-media-container">
-          <div className="project-media-wrapper">
-            <img 
-              src="/projects/2025-12-21%2001.48.57.jpg" 
-              alt={project.title} 
-              className="project-media-image"
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="project-overview">
-        <div className="project-container">
-          <h2 className="project-overview-title">Overview Progetto</h2>
-          
-          <div className="project-overview-section">
-            <div className="project-section-label">(DESCRIZIONE)</div>
-            <div className="project-section-content">
-              {project.description.map((paragraph, index) => (
-                <p key={index} className="project-text">{paragraph}</p>
-              ))}
-            </div>
-          </div>
-
-          <div className="project-overview-section">
-            <div className="project-section-label">(IL MIO RUOLO)</div>
-            <div className="project-section-content">
-              {project.myRole.map((paragraph, index) => (
-                <p key={index} className="project-text">{paragraph}</p>
-              ))}
+            <div className="project-detail-right">
+              <div className="project-detail-image">
+                <img 
+                  src={parallelScreen4} 
+                  alt={project.title} 
+                  className="project-detail-img"
+                  onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="project-media-section">
-        <div className="project-media-container">
-          <div className="project-media-wrapper">
+      <div className="project-detail-spacer"></div>
+
+      <section className="project-detail-fullscreen">
+        <div className="project-detail-fullscreen-image">
+          <img 
+            src={parallelScreen5} 
+            alt={project.title} 
+            className="project-detail-fullscreen-img"
+            onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
+          />
+        </div>
+      </section>
+
+      <div className="project-detail-spacer"></div>
+
+      <section className="project-detail-text-block">
+        <div className="project-detail-text-container">
+          <h2 className="project-detail-text-title">Premium, but not snobbish</h2>
+          <p className="project-detail-text-content">Starting with a very strong graphic concept, a parallel growth, the line becomes the protagonist of the visual identity. A line that grows, connects and marks a path both for the eye and the mind.</p>
+        </div>
+      </section>
+
+      <div className="project-detail-spacer"></div>
+
+      <section className="project-detail-fullscreen">
+        <div className="project-detail-fullscreen-image">
+          <img 
+            src={parallelScreen6} 
+            alt={project.title} 
+            className="project-detail-fullscreen-img"
+            onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
+          />
+        </div>
+      </section>
+
+      <div className="project-detail-spacer"></div>
+
+      <section className="project-detail-two-images">
+        <div className="project-detail-two-images-container">
+          <div className="project-detail-two-images-item">
             <img 
-              src="/projects/2025-12-21%2001.48.57.jpg" 
+              src={parallelScreen4} 
               alt={project.title} 
-              className="project-media-image"
-              onError={(e) => { e.target.style.display = 'none'; }} 
+              className="project-detail-two-images-img"
+              onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
+            />
+          </div>
+          <div className="project-detail-two-images-item">
+            <img 
+              src={parallelScreen51} 
+              alt={project.title} 
+              className="project-detail-two-images-img"
+              onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
             />
           </div>
         </div>
       </section>
-
-      <section className="project-media-section">
-        <div className="project-media-container">
-          <div className="project-media-wrapper">
-            <img 
-              src="/projects/2025-12-21%2001.48.57.jpg" 
-              alt={project.title} 
-              className="project-media-image"
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="project-media-section">
-        <div className="project-media-container">
-          <div className="project-media-wrapper">
-            <img 
-              src="/projects/2025-12-21%2001.48.57.jpg" 
-              alt={project.title} 
-              className="project-media-image"
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="project-media-section">
-        <div className="project-media-container">
-          <div className="project-media-wrapper">
-            <img 
-              src="/projects/2025-12-21%2001.48.57.jpg" 
-              alt={project.title} 
-              className="project-media-image"
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="project-media-section">
-        <div className="project-media-container">
-          <div className="project-media-wrapper">
-            <img 
-              src="/projects/2025-12-21%2001.48.57.jpg" 
-              alt={project.title} 
-              className="project-media-image"
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="project-media-section">
-        <div className="project-media-container">
-          <div className="project-media-wrapper">
-            <img 
-              src="/projects/2025-12-21%2001.48.57.jpg" 
-              alt={project.title} 
-              className="project-media-image"
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-          </div>
-        </div>
-      </section>
-
-      {project.relatedProjects && project.relatedProjects.length > 0 && (
-        <section className="project-related">
-          <div className="project-container">
-            <h3 className="project-related-title">Progetti correlati:</h3>
-            <div className="project-related-list">
-              {project.relatedProjects.map((related, index) => (
-                <Link key={index} to={related.link} className="project-related-item">
-                  <span className="project-related-name">{related.name}</span>
-                  <span className="project-related-category">{related.category}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   )
 }

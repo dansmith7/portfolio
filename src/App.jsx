@@ -1,15 +1,90 @@
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import Lenis from 'lenis'
+import 'lenis/dist/lenis.css'
 import Home from './pages/Home'
 import Work from './pages/Work'
 import About from './pages/About'
 import ProjectDetail from './pages/ProjectDetail'
 
+// Плавный скролл с Lenis (как на paolobaronio.it)
+function SmoothScroll() {
+  const lenisRef = useRef(null)
+  const location = useLocation()
+
+  useEffect(() => {
+    // Инициализация Lenis
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      infinite: false,
+    })
+
+    lenisRef.current = lenis
+
+    // Функция анимации
+    function raf(time) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+
+    requestAnimationFrame(raf)
+
+    // Обработка якорных ссылок
+    const handleAnchorClick = (e) => {
+      const target = e.target.closest('a[href^="#"]')
+      if (!target) return
+      
+      const href = target.getAttribute('href')
+      if (href === '#' || !href) return
+      
+      const targetElement = document.querySelector(href)
+      if (targetElement && lenis) {
+        e.preventDefault()
+        lenis.scrollTo(targetElement, {
+          offset: 0,
+          duration: 1.5,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        })
+      }
+    }
+
+    document.addEventListener('click', handleAnchorClick)
+
+    return () => {
+      lenis.destroy()
+      document.removeEventListener('click', handleAnchorClick)
+    }
+  }, [])
+
+  // Обновление Lenis при смене маршрута
+  useEffect(() => {
+    if (lenisRef.current) {
+      // Прокрутка в начало при смене страницы
+      lenisRef.current.scrollTo(0, {
+        immediate: true,
+      })
+      // Обновление размеров контента
+      setTimeout(() => {
+        lenisRef.current.resize()
+      }, 100)
+    }
+  }, [location])
+
+  return null
+}
+
 function CustomCursor() {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
-  const [cursorType, setCursorType] = useState('open') // 'open' или 'arrow'
+  const [cursorType, setCursorType] = useState('arrow') // 'arrow' для всех кликабельных элементов
   const [isVisible, setIsVisible] = useState(false)
   const [hoverColor, setHoverColor] = useState('#FFE5B4') // светло-желтый по умолчанию
 
@@ -80,7 +155,15 @@ function CustomCursor() {
       const target = document.elementFromPoint(x, y)
       if (!target) {
         setIsHovering(false)
-        setCursorType('open')
+        setCursorType('arrow')
+        lastHoveredElement = null
+        return
+      }
+      
+      // Пропускаем проверку для последнего экрана с хвостом из плашек
+      if (target.closest('.contact-form-section')) {
+        setIsHovering(false)
+        setCursorType('arrow')
         lastHoveredElement = null
         return
       }
@@ -112,13 +195,8 @@ function CustomCursor() {
       
       // Определяем тип курсора
       if (isClickable) {
-        if (largeElement) {
-          setCursorType('open')
-        } else if (arrowButton || textLink || (target.tagName === 'A' && !target.closest('.project-card'))) {
-          setCursorType('arrow')
-        } else {
-          setCursorType('open')
-        }
+        // Все кликабельные элементы показывают стрелку
+        setCursorType('arrow')
       }
       
       // Если навели на новый элемент, меняем цвет
@@ -130,7 +208,7 @@ function CustomCursor() {
       
       if (!isClickable) {
         lastHoveredElement = null
-        setCursorType('open')
+        setCursorType('arrow')
       }
       
       setIsHovering(isClickable)
@@ -215,15 +293,16 @@ function AppContent() {
   
   return (
     <div className={`App ${isWorkPage ? 'work-page-active' : ''}`}>
+      <SmoothScroll />
       <CustomCursor />
       <header className={`header ${isStaticHeader ? 'header-static' : ''}`}>
           <div className="header-content">
-            <div className="header-name">Ani.Designs</div>
+            <div className="header-name header-name-visible">an(y) designs</div>
             <nav className="nav">
               <Link to="/">Home</Link>
               <Link to="/work">Work</Link>
               <Link to="/about">About</Link>
-              <a href="#contatti">Contatti</a>
+              <a href="#contatti">Contacts</a>
             </nav>
           </div>
         </header>
@@ -257,7 +336,7 @@ function AppContent() {
             </div>
           </div>
           <div className="footer-logo-container">
-            <div className="footer-logo">@any.designs</div>
+            <div className="footer-logo">an(y) designs</div>
           </div>
         </footer>
       </div>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.contact-us-content {
+  display: grid;
+  grid-template-columns: minmax(420px, 480px) 1fr;
+  gap: 80px;
+  align-items: stretch;
+}
+.contact-us-image {
+  width: 100% !important;
+  max-width: 480px !important;
+  justify-self: end !important;
+  align-self: stretch !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  background: red;
+}
+.contact-img {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+</style>
+</head>
+<body>
+<div class="contact-us-content" style="min-height: 500px;">
+  <div style="background: blue; min-height: 500px;">Left column</div>
+  <div class="contact-us-image">
+    <img class="contact-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='green' width='400' height='300'/%3E%3C/svg%3E" />
+  </div>
+</div>
+</body>
+</html>

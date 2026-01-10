@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { 
+      font-family: 'Jost', Arial, sans-serif;
+      padding: 40px;
+      background: white;
+    }
+    .desc {
+      font-size: 20px;
+      line-height: 1.6;
+      margin-bottom: 60px;
+      max-width: 480px;
+    }
+    .info-left {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .label {
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .button {
+      padding: 12px 20px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      font-size: 16px;
+      display: inline-flex;
+      width: fit-content;
+    }
+    .measure { 
+      background: red; 
+      height: 1px; 
+      position: absolute;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class='desc' id='desc'>Reach out to us and let's collaborate on bringing your project to life.</div>
+  <div class='info-left'>
+    <div class='info-item'>
+      <div class='label'>EMAIL</div>
+      <div class='button'>info@example.com</div>
+    </div>
+    <div class='info-item' id='last-item'>
+      <div class='label'>TELEGRAM</div>
+      <div class='button' id='telegram-btn'>@yourusername</div>
+    </div>
+  </div>
+  <script>
+    const desc = document.getElementById('desc');
+    const btn = document.getElementById('telegram-btn');
+    const descRect = desc.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const distance = btnRect.bottom - descRect.top;
+    console.log('Расстояние от верха первой строки текста до низа кнопки Telegram:', distance, 'px');
+    document.body.innerHTML += '<div style="margin-top: 20px; padding: 10px; background: #f0f0f0;"><strong>Расстояние: ' + Math.round(distance) + 'px</strong></div>';
+  </script>
+</body>
+</html>

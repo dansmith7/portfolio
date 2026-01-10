@@ -1,11 +1,14 @@
 import '../App.css'
 import { Link } from 'react-router-dom'
+import ContactForm from '../components/ContactForm'
 
 function Home() {
   return (
-    <>
+    <div className="page-fade-in">
       <section className="hero-screen">
-        <div className="hero-logo">@any.designs</div>
+        <div className="hero-logo">
+          an(y) designs
+        </div>
       </section>
       <section className="description-screen">
         <div className="hero-description">
@@ -117,31 +120,25 @@ function Home() {
       <section className="contact-us-section">
         <div className="contact-us-container">
           <h2 className="contact-us-title">CONTACT US</h2>
-          <div className="form-section">
-            <div className="contact-item">
-              <h2 className="subtitle">YOUR NAME</h2>
-              <div className="input-row">
-                <a href="mailto:info@example.com" className="input-email email-button">info@example.com</a>
-                <a href="https://t.me/yourusername" target="_blank" rel="noopener noreferrer" className="telegram-button">
+          <div className="contact-us-content">
+            <div className="contact-info-left">
+              <p className="contact-us-description">Reach out to us and let's collaborate on bringing your project to life.</p>
+              <div className="contact-info-item">
+                <div className="contact-info-label">EMAIL</div>
+                <a href="mailto:info@example.com" className="contact-info-value contact-button">info@example.com</a>
+              </div>
+              <div className="contact-info-item">
+                <div className="contact-info-label">TELEGRAM</div>
+                <a href="https://t.me/yourusername" target="_blank" rel="noopener noreferrer" className="contact-info-value contact-button">
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
                   </svg>
-                  <span>Telegram</span>
+                  <span>@yourusername</span>
                 </a>
               </div>
             </div>
-
-            <div className="contact-item">
-              <h2 className="subtitle">ANOTHER NAME</h2>
-              <div className="input-row">
-                <a href="mailto:contact@example.com" className="input-email email-button">contact@example.com</a>
-                <a href="https://t.me/anotherusername" target="_blank" rel="noopener noreferrer" className="telegram-button">
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
-                  </svg>
-                  <span>Telegram</span>
-                </a>
-              </div>
+            <div className="contact-us-image">
+              <img src="/projects/2025-12-21%2001.48.57.jpg" alt="Contact" className="contact-img" />
             </div>
           </div>
         </div>
@@ -186,7 +183,8 @@ function Home() {
           </div>
         </div>
       </section>
-    </>
+      <ContactForm />
+    </div>
   )
 }
 

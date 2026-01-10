@@ -2,7 +2,7 @@ import '../App.css'
 
 function About() {
   return (
-    <div className="about-page">
+    <div className="about-page page-fade-in">
       <section className="about-hero">
         <div className="about-container">
           <div className="about-divider"></div>
