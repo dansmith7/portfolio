@@ -1,13 +1,38 @@
 import '../App.css'
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import ContactForm from '../components/ContactForm'
 
 function Home() {
+  const [displayedText, setDisplayedText] = useState('')
+  const fullText = 'an(y) designs'
+  const [isTyping, setIsTyping] = useState(true)
+
+  useEffect(() => {
+    if (!isTyping) return
+
+    let currentIndex = 0
+    const typingSpeed = 120 // миллисекунды между символами (ускорено на 20%)
+
+    const typeInterval = setInterval(() => {
+      if (currentIndex < fullText.length) {
+        setDisplayedText(fullText.slice(0, currentIndex + 1))
+        currentIndex++
+      } else {
+        setIsTyping(false)
+        clearInterval(typeInterval)
+      }
+    }, typingSpeed)
+
+    return () => clearInterval(typeInterval)
+  }, [isTyping, fullText])
+
   return (
     <div className="page-fade-in">
       <section className="hero-screen">
         <div className="hero-logo">
-          an(y) designs
+          {displayedText}
+          {isTyping && <span className="typewriter-cursor">|</span>}
         </div>
       </section>
       <section className="description-screen">
@@ -117,7 +142,7 @@ function Home() {
           </div>
         </div>
       </section>
-      <section className="contact-us-section">
+      <section id="contact-us" className="contact-us-section">
         <div className="contact-us-container">
           <h2 className="contact-us-title">CONTACT US</h2>
           <div className="contact-us-content">

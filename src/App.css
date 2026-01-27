@@ -277,6 +277,12 @@
   color: #000000;
   letter-spacing: 0.01em;
   font-family: 'Jost', Arial, sans-serif;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.header-name:hover {
+  opacity: 0.6;
 }
 
 .header-name-visible {
@@ -289,6 +295,11 @@
   color: #000000;
   letter-spacing: 0.01em;
   font-family: 'Jost', Arial, sans-serif;
+  text-decoration: none;
+}
+
+.header-static .header-name:hover {
+  opacity: 0.6;
 }
 
 .nav {
@@ -350,6 +361,22 @@
   box-sizing: border-box;
 }
 
+.typewriter-cursor {
+  display: inline-block;
+  animation: blink 1s infinite;
+  margin-left: 4px;
+  color: #000000;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
 /* Description Screen */
 .description-screen {
   min-height: auto;
@@ -383,7 +410,7 @@
   min-height: 100vh;
   position: relative;
   background-color: #ffffff;
-  padding: 45px 0 0;
+  padding: 45px 0 40px;
   margin-top: 0;
   z-index: 0;
   overflow: visible;
@@ -410,7 +437,7 @@
 .works-section {
   width: 100%;
   background-color: #ffffff;
-  padding: 80px 80px 10px;
+  padding: 40px 80px 10px;
   position: relative;
   box-sizing: border-box;
   overflow-x: hidden;
@@ -2409,6 +2436,14 @@
   font-family: 'Jost', Arial, sans-serif;
   line-height: 1.1;
   margin: 0;
+}
+
+.project-detail-section-hidden {
+  visibility: hidden;
+  height: 84px; /* Фиксированная высота для сохранения места (font-size 64px * line-height 1.1 ≈ 70px + небольшой отступ) */
+  min-height: 84px;
+  margin: 0;
+  overflow: hidden;
 }
 
 .project-detail-section-header {

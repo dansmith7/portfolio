@@ -34,7 +34,7 @@ function ProjectDetail() {
                 <p>{project.description}</p>
               </div>
 
-              <div className="project-detail-section">
+              <div className="project-detail-section project-detail-section-hidden">
                 <h2 className="project-detail-section-title">Visual identity /25</h2>
               </div>
 

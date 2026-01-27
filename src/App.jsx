@@ -9,11 +9,13 @@ import About from './pages/About'
 import ProjectDetail from './pages/ProjectDetail'
 
 // Плавный скролл с Lenis (как на paolobaronio.it)
-function SmoothScroll() {
-  const lenisRef = useRef(null)
+function SmoothScroll({ lenisRef }) {
   const location = useLocation()
 
   useEffect(() => {
+    // Сначала сбрасываем нативный скролл
+    window.scrollTo(0, 0)
+    
     // Инициализация Lenis
     const lenis = new Lenis({
       duration: 1.2,
@@ -28,6 +30,8 @@ function SmoothScroll() {
     })
 
     lenisRef.current = lenis
+    // Сбрасываем скролл Lenis сразу после инициализации
+    lenis.scrollTo(0, { immediate: true })
 
     // Функция анимации
     function raf(time) {
@@ -37,42 +41,105 @@ function SmoothScroll() {
 
     requestAnimationFrame(raf)
 
-    // Обработка якорных ссылок
-    const handleAnchorClick = (e) => {
-      const target = e.target.closest('a[href^="#"]')
+    // Обработка якорных ссылок (включая ссылки в формате /#id)
+    const handleLinkClick = (e) => {
+      const target = e.target.closest('a[href*="#"]')
       if (!target) return
       
       const href = target.getAttribute('href')
-      if (href === '#' || !href) return
+      if (!href || href === '#') return
       
-      const targetElement = document.querySelector(href)
+      // Извлекаем id из href (может быть в формате /#contact-us или #contact-us)
+      let hash = null
+      if (href.includes('/#')) {
+        hash = href.split('/#')[1]
+      } else if (href.startsWith('#')) {
+        hash = href.replace('#', '')
+      }
+      
+      if (!hash) return
+      
+      const targetElement = document.getElementById(hash)
       if (targetElement && lenis) {
         e.preventDefault()
-        lenis.scrollTo(targetElement, {
-          offset: 0,
-          duration: 1.5,
-          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        })
+        // Если мы на главной странице, скроллим сразу
+        if (window.location.pathname === '/') {
+          lenis.scrollTo(targetElement, {
+            offset: -100, // Отступ сверху для шапки
+            duration: 1.5,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          })
+        } else {
+          // Если не на главной, переходим на главную с hash
+          window.location.href = `/#${hash}`
+        }
       }
     }
 
-    document.addEventListener('click', handleAnchorClick)
+    document.addEventListener('click', handleLinkClick)
+    
+    // Обработка якорных ссылок в формате /#id
+    const handleHashNavigation = () => {
+      if (window.location.hash && lenis) {
+        const hash = window.location.hash.replace('#', '')
+        const targetElement = document.getElementById(hash)
+        if (targetElement) {
+          setTimeout(() => {
+            lenis.scrollTo(targetElement, {
+              offset: -100,
+              duration: 1.5,
+              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            })
+          }, 100)
+        }
+      }
+    }
+    
+    handleHashNavigation()
+    window.addEventListener('hashchange', handleHashNavigation)
 
     return () => {
       lenis.destroy()
-      document.removeEventListener('click', handleAnchorClick)
+      document.removeEventListener('click', handleLinkClick)
+      window.removeEventListener('hashchange', handleHashNavigation)
     }
-  }, [])
+  }, [location, lenisRef])
 
   // Обновление Lenis при смене маршрута
   useEffect(() => {
+    // Сбрасываем нативный скролл сразу при смене маршрута
+    window.scrollTo(0, 0)
+    
     if (lenisRef.current) {
-      // Прокрутка в начало при смене страницы
+      // Всегда сначала скроллим в начало при смене маршрута (immediate)
       lenisRef.current.scrollTo(0, {
         immediate: true,
       })
-      // Обновление размеров контента
+      
+      // Принудительно обновляем позицию скролла
+      lenisRef.current.raf(0)
+      
+      // Небольшая задержка для обновления DOM
       setTimeout(() => {
+        // Если есть hash в URL И мы на главной странице, скроллим к нему
+        if (window.location.hash && location.pathname === '/') {
+          const hash = window.location.hash.replace('#', '')
+          const targetElement = document.getElementById(hash)
+          if (targetElement) {
+            lenisRef.current.scrollTo(targetElement, {
+              offset: -100,
+              duration: 1.5,
+              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            })
+          }
+        } else {
+          // Для других страниц (Work, About и т.д.) всегда в начало
+          lenisRef.current.scrollTo(0, {
+            immediate: true,
+          })
+        }
+        
+        // Обновление размеров контента
         lenisRef.current.resize()
       }, 100)
     }
@@ -290,19 +357,74 @@ function AppContent() {
   const isAboutPage = location.pathname === '/about'
   const isProjectPage = location.pathname.startsWith('/work/') && location.pathname !== '/work'
   const isStaticHeader = isWorkPage || isAboutPage || isProjectPage
+  const lenisRef = useRef(null)
+  
+  // Сбрасываем скролл при смене маршрута (кроме случаев с hash на главной)
+  useEffect(() => {
+    // Если НЕТ hash или мы НЕ на главной странице, всегда сбрасываем скролл в начало
+    if (!window.location.hash || location.pathname !== '/') {
+      // Сбрасываем нативный скролл немедленно (синхронно)
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+      
+      // Если Lenis инициализирован, сбрасываем и его
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true })
+      }
+      
+      // Дополнительная проверка через небольшой таймаут для надежности
+      const resetScroll = () => {
+        window.scrollTo(0, 0)
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(0, { immediate: true })
+        }
+      }
+      
+      resetScroll()
+      setTimeout(resetScroll, 10)
+      setTimeout(resetScroll, 50)
+      setTimeout(resetScroll, 100)
+    }
+  }, [location])
+  
+  // Обработчик клика на ссылки в навигации для немедленного сброса скролла
+  useEffect(() => {
+    const handleNavClick = (e) => {
+      const target = e.target.closest('a')
+      if (!target) return
+      
+      const href = target.getAttribute('href')
+      // Если это ссылка на /work, /about или / (без hash), сразу сбрасываем скролл
+      if (href && (href === '/work' || href === '/about' || href === '/')) {
+        window.scrollTo(0, 0)
+        document.documentElement.scrollTop = 0
+        document.body.scrollTop = 0
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(0, { immediate: true })
+        }
+      }
+    }
+    
+    document.addEventListener('click', handleNavClick, true) // true для capture phase
+    
+    return () => {
+      document.removeEventListener('click', handleNavClick, true)
+    }
+  }, [lenisRef])
   
   return (
     <div className={`App ${isWorkPage ? 'work-page-active' : ''}`}>
-      <SmoothScroll />
+      <SmoothScroll lenisRef={lenisRef} />
       <CustomCursor />
       <header className={`header ${isStaticHeader ? 'header-static' : ''}`}>
           <div className="header-content">
-            <div className="header-name header-name-visible">an(y) designs</div>
+            <Link to="/" className="header-name header-name-visible">an(y) designs</Link>
             <nav className="nav">
               <Link to="/">Home</Link>
               <Link to="/work">Work</Link>
               <Link to="/about">About</Link>
-              <a href="#contatti">Contacts</a>
+              <Link to="/#contact-us">Contacts</Link>
             </nav>
           </div>
         </header>
@@ -327,7 +449,7 @@ function AppContent() {
             <div className="footer-center">
               <nav className="footer-nav">
                 <Link to="/about">About</Link>
-                <a href="#contatti">Contacts</a>
+                <Link to="/#contact-us">Contacts</Link>
               </nav>
             </div>
             <div className="footer-right">
