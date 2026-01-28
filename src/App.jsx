@@ -1,19 +1,27 @@
 import './App.css'
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Outlet } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Home from './pages/Home'
 import Work from './pages/Work'
 import About from './pages/About'
 import ProjectDetail from './pages/ProjectDetail'
+import { AdminAuthProvider } from './contexts/AdminAuthContext'
+import AdminGuard from './pages/admin/AdminGuard'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminSettings from './pages/admin/AdminSettings'
+import AdminProjects from './pages/admin/AdminProjects'
+import AdminProjectEdit from './pages/admin/AdminProjectEdit'
 
-// Плавный скролл с Lenis (как на paolobaronio.it)
+// Плавный скролл с Lenis
 function SmoothScroll({ lenisRef }) {
   const location = useLocation()
 
   useEffect(() => {
-    // Сначала сбрасываем нативный скролл
+    // Сбрасываем скролл при смене маршрута
     window.scrollTo(0, 0)
     
     // Инициализация Lenis
@@ -30,18 +38,15 @@ function SmoothScroll({ lenisRef }) {
     })
 
     lenisRef.current = lenis
-    // Сбрасываем скролл Lenis сразу после инициализации
     lenis.scrollTo(0, { immediate: true })
 
-    // Функция анимации
     function raf(time) {
       lenis.raf(time)
       requestAnimationFrame(raf)
     }
-
     requestAnimationFrame(raf)
 
-    // Обработка якорных ссылок (включая ссылки в формате /#id)
+    // Обработка якорных ссылок
     const handleLinkClick = (e) => {
       const target = e.target.closest('a[href*="#"]')
       if (!target) return
@@ -49,7 +54,6 @@ function SmoothScroll({ lenisRef }) {
       const href = target.getAttribute('href')
       if (!href || href === '#') return
       
-      // Извлекаем id из href (может быть в формате /#contact-us или #contact-us)
       let hash = null
       if (href.includes('/#')) {
         hash = href.split('/#')[1]
@@ -62,15 +66,13 @@ function SmoothScroll({ lenisRef }) {
       const targetElement = document.getElementById(hash)
       if (targetElement && lenis) {
         e.preventDefault()
-        // Если мы на главной странице, скроллим сразу
         if (window.location.pathname === '/') {
           lenis.scrollTo(targetElement, {
-            offset: -100, // Отступ сверху для шапки
+            offset: -100,
             duration: 1.5,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
           })
         } else {
-          // Если не на главной, переходим на главную с hash
           window.location.href = `/#${hash}`
         }
       }
@@ -78,9 +80,8 @@ function SmoothScroll({ lenisRef }) {
 
     document.addEventListener('click', handleLinkClick)
     
-    // Обработка якорных ссылок в формате /#id
     const handleHashNavigation = () => {
-      if (window.location.hash && lenis) {
+      if (window.location.hash && lenis && window.location.pathname === '/') {
         const hash = window.location.hash.replace('#', '')
         const targetElement = document.getElementById(hash)
         if (targetElement) {
@@ -105,45 +106,19 @@ function SmoothScroll({ lenisRef }) {
     }
   }, [location, lenisRef])
 
-  // Обновление Lenis при смене маршрута
-  useEffect(() => {
-    // Сбрасываем нативный скролл сразу при смене маршрута
-    window.scrollTo(0, 0)
-    
-    if (lenisRef.current) {
-      // Всегда сначала скроллим в начало при смене маршрута (immediate)
-      lenisRef.current.scrollTo(0, {
-        immediate: true,
-      })
-      
-      // Принудительно обновляем позицию скролла
-      lenisRef.current.raf(0)
-      
-      // Небольшая задержка для обновления DOM
-      setTimeout(() => {
-        // Если есть hash в URL И мы на главной странице, скроллим к нему
-        if (window.location.hash && location.pathname === '/') {
-          const hash = window.location.hash.replace('#', '')
-          const targetElement = document.getElementById(hash)
-          if (targetElement) {
-            lenisRef.current.scrollTo(targetElement, {
-              offset: -100,
-              duration: 1.5,
-              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            })
-          }
-        } else {
-          // Для других страниц (Work, About и т.д.) всегда в начало
-          lenisRef.current.scrollTo(0, {
-            immediate: true,
-          })
-        }
-        
-        // Обновление размеров контента
-        lenisRef.current.resize()
-      }, 100)
+  // Сброс скролла при смене маршрута (useLayoutEffect = до отрисовки, чтобы не было "прыжка")
+  useLayoutEffect(() => {
+    const isProjectPage = location.pathname.startsWith('/work/') && location.pathname !== '/work'
+    if (isProjectPage && window.location.hash) {
+      window.history.replaceState(null, '', location.pathname)
     }
-  }, [location])
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true })
+    }
+  }, [location.pathname])
 
   return null
 }
@@ -353,65 +328,32 @@ function CustomCursor() {
 
 function AppContent() {
   const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/admin')
   const isWorkPage = location.pathname === '/work'
   const isAboutPage = location.pathname === '/about'
   const isProjectPage = location.pathname.startsWith('/work/') && location.pathname !== '/work'
   const isStaticHeader = isWorkPage || isAboutPage || isProjectPage
   const lenisRef = useRef(null)
-  
-  // Сбрасываем скролл при смене маршрута (кроме случаев с hash на главной)
-  useEffect(() => {
-    // Если НЕТ hash или мы НЕ на главной странице, всегда сбрасываем скролл в начало
-    if (!window.location.hash || location.pathname !== '/') {
-      // Сбрасываем нативный скролл немедленно (синхронно)
-      window.scrollTo(0, 0)
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
-      
-      // Если Lenis инициализирован, сбрасываем и его
-      if (lenisRef.current) {
-        lenisRef.current.scrollTo(0, { immediate: true })
-      }
-      
-      // Дополнительная проверка через небольшой таймаут для надежности
-      const resetScroll = () => {
-        window.scrollTo(0, 0)
-        if (lenisRef.current) {
-          lenisRef.current.scrollTo(0, { immediate: true })
-        }
-      }
-      
-      resetScroll()
-      setTimeout(resetScroll, 10)
-      setTimeout(resetScroll, 50)
-      setTimeout(resetScroll, 100)
-    }
-  }, [location])
-  
-  // Обработчик клика на ссылки в навигации для немедленного сброса скролла
-  useEffect(() => {
-    const handleNavClick = (e) => {
-      const target = e.target.closest('a')
-      if (!target) return
-      
-      const href = target.getAttribute('href')
-      // Если это ссылка на /work, /about или / (без hash), сразу сбрасываем скролл
-      if (href && (href === '/work' || href === '/about' || href === '/')) {
-        window.scrollTo(0, 0)
-        document.documentElement.scrollTop = 0
-        document.body.scrollTop = 0
-        if (lenisRef.current) {
-          lenisRef.current.scrollTo(0, { immediate: true })
-        }
-      }
-    }
-    
-    document.addEventListener('click', handleNavClick, true) // true для capture phase
-    
-    return () => {
-      document.removeEventListener('click', handleNavClick, true)
-    }
-  }, [lenisRef])
+
+  if (isAdmin) {
+    return (
+      <AdminAuthProvider>
+        <Routes>
+          <Route path="/admin" element={<Outlet />}>
+            <Route path="login" element={<AdminLogin />} />
+            <Route element={<AdminGuard><AdminLayout /></AdminGuard>}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="settings" element={<AdminSettings />} />
+              <Route path="projects" element={<AdminProjects />} />
+              <Route path="projects/new" element={<AdminProjectEdit />} />
+              <Route path="projects/:projectSlug" element={<AdminProjectEdit />} />
+            </Route>
+          </Route>
+        </Routes>
+      </AdminAuthProvider>
+    )
+  }
+
   
   return (
     <div className={`App ${isWorkPage ? 'work-page-active' : ''}`}>
@@ -468,10 +410,13 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <Routes>
+        <Route path="*" element={<AppContent />} />
+      </Routes>
     </Router>
   )
 }
+
 
 export default App
 

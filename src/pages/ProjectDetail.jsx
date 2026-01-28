@@ -1,81 +1,134 @@
 import '../App.css'
 import { useParams, Link } from 'react-router-dom'
-import parallelScreen4 from '../assets/images/68d85ba814a43e6ce6e89ce6_parallel-screen-4.jpg'
-import parallelScreen5 from '../assets/images/68d85ba9c9027aee8bcda2f6_parallel-screen-5.jpg'
-import parallelScreen51 from '../assets/images/68d85ba9c9027aee8bcda2f6_parallel-screen-5 (1).jpg'
-import parallelScreen6 from '../assets/images/68d85ba578ad30d1cb1ca91a_parallel-screen 6.jpg'
+import { useState, useEffect, useLayoutEffect } from 'react'
+import { fetchProjectBySlug } from '../lib/siteData'
+
+const FALLBACK_IMG = '/projects/2025-12-21%2001.48.57.jpg'
 
 function ProjectDetail() {
   const { projectId } = useParams()
-  
-  // Данные проекта (в будущем можно вынести в отдельный файл или API)
-  const projectData = {
-    'ingv': {
-      title: 'SERIE A',
-      description: 'Logo and visual identity design for Serie A, providing a personalised mentorship service for young students by building a role model relationships with more experienced student mentors in academic life.',
-      concept: 'Serie A wanted to communicate its premium and sophisticated soul. The concept is inspired by the name, which symbolises a path of growth and parallel accompaniment of the mentor and mentee, brought back to the graphic sign of growth and rise.',
-      requirements: 'Serie A needed a strong enough visual identity to differentiate itself in a rather crowded market environment. Premium, but not snobby, trustworthy, but not cold.',
-      output: 'Initial applications included flyers, posters, pitch decks and social media graphics. The identity ensures flexibility across online and offline media, ensuring strong immediate recognisability.',
-      image: '/projects/2025-12-21%2001.48.57.jpg'
+  const [project, setProject] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // Сброс скролла до отрисовки (useLayoutEffect) при переходе на страницу проекта
+  useLayoutEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname)
     }
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }, [projectId])
+
+  useEffect(() => {
+    if (!projectId) {
+      setLoading(false)
+      return
+    }
+    
+    setLoading(true)
+    let cancelled = false
+    
+    fetchProjectBySlug(projectId)
+      .then((p) => {
+        if (!cancelled) {
+          setProject(p)
+          requestAnimationFrame(() => {
+            window.scrollTo(0, 0)
+            document.documentElement.scrollTop = 0
+            document.body.scrollTop = 0
+          })
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setProject(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    
+    return () => { 
+      cancelled = true
+    }
+  }, [projectId])
+
+  if (loading) {
+    return (
+      <div className="project-detail-page page-fade-in">
+        <p style={{ padding: '2rem', textAlign: 'center' }}>Загрузка…</p>
+        <p style={{ padding: '0 2rem 2rem', textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>
+          Если загрузка долгая, проверьте подключение к интернету или <Link to="/work">вернитесь к списку проектов</Link>.
+        </p>
+      </div>
+    )
   }
   
-  const project = projectData[projectId] || projectData['ingv']
-  
+  if (!project) {
+    return (
+      <div className="project-detail-page page-fade-in">
+        <p style={{ padding: '2rem', textAlign: 'center' }}>Проект не найден.</p>
+        <p style={{ textAlign: 'center' }}><Link to="/work">Все проекты</Link></p>
+      </div>
+    )
+  }
+
+  // Добавляем версию к URL для обхода кэша при обновлении проекта
+  const img = (url) => {
+    const baseUrl = url || FALLBACK_IMG
+    if (!url) return baseUrl
+    return project.updated_at ? `${baseUrl}?v=${new Date(project.updated_at).getTime()}` : baseUrl
+  }
+  const media = project.media || []
+
   return (
     <div className="project-detail-page page-fade-in">
       <section className="project-detail-main">
         <div className="project-detail-container">
           <div className="project-detail-content">
             <div className="project-detail-left">
-              <h1 className="project-detail-title">{project.title}</h1>
-              
+              <h1 className="project-detail-title">{project.name}</h1>
               <div className="project-detail-description">
-                <p>{project.description}</p>
+                <p>{project.description_text}</p>
               </div>
-
               <div className="project-detail-section project-detail-section-hidden">
                 <h2 className="project-detail-section-title">Visual identity /25</h2>
               </div>
-
               <div className="project-detail-section">
                 <div className="project-detail-section-header">
-                  <div className="project-detail-section-divider"></div>
+                  <div className="project-detail-section-divider" />
                   <h3 className="project-detail-section-label">CONCEPT</h3>
                 </div>
                 <div className="project-detail-section-content">
-                  <p>{project.concept}</p>
+                  <p>{project.concept_text}</p>
                 </div>
               </div>
-
               <div className="project-detail-section">
                 <div className="project-detail-section-header">
-                  <div className="project-detail-section-divider"></div>
+                  <div className="project-detail-section-divider" />
                   <h3 className="project-detail-section-label">REQUIREMENTS</h3>
                 </div>
                 <div className="project-detail-section-content">
-                  <p>{project.requirements}</p>
+                  <p>{project.requirements_text}</p>
                 </div>
               </div>
-
               <div className="project-detail-section">
                 <div className="project-detail-section-header">
-                  <div className="project-detail-section-divider"></div>
+                  <div className="project-detail-section-divider" />
                   <h3 className="project-detail-section-label">OUTPUT</h3>
                 </div>
                 <div className="project-detail-section-content">
-                  <p>{project.output}</p>
+                  <p>{project.output_text}</p>
                 </div>
               </div>
             </div>
-
             <div className="project-detail-right">
               <div className="project-detail-image">
                 <img 
-                  src={parallelScreen4} 
-                  alt={project.title} 
-                  className="project-detail-img"
-                  onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
+                  src={img(project.cover_image_url)} 
+                  alt={project.name} 
+                  className="project-detail-img" 
+                  onError={(e) => { e.target.src = FALLBACK_IMG }}
+                  loading="eager"
                 />
               </div>
             </div>
@@ -83,66 +136,87 @@ function ProjectDetail() {
         </div>
       </section>
 
-      <div className="project-detail-spacer"></div>
+      {project.first_horizontal_image_url && (
+        <>
+          <div className="project-detail-spacer" />
+          <section className="project-detail-fullscreen">
+            <div className="project-detail-fullscreen-image">
+              <img 
+                src={img(project.first_horizontal_image_url)} 
+                alt={project.name} 
+                className="project-detail-fullscreen-img" 
+                onError={(e) => { e.target.src = FALLBACK_IMG }}
+                loading="lazy"
+              />
+            </div>
+          </section>
+        </>
+      )}
 
-      <section className="project-detail-fullscreen">
-        <div className="project-detail-fullscreen-image">
-          <img 
-            src={parallelScreen5} 
-            alt={project.title} 
-            className="project-detail-fullscreen-img"
-            onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
-          />
-        </div>
-      </section>
+      {(project.second_block_title || project.second_block_text) && (
+        <>
+          <div className="project-detail-spacer" />
+          <section className="project-detail-text-block">
+            <div className="project-detail-text-container">
+              <h2 className="project-detail-text-title">{project.second_block_title || '—'}</h2>
+              <p className="project-detail-text-content">{project.second_block_text || ''}</p>
+            </div>
+          </section>
+        </>
+      )}
 
-      <div className="project-detail-spacer"></div>
-
-      <section className="project-detail-text-block">
-        <div className="project-detail-text-container">
-          <h2 className="project-detail-text-title">Premium, but not snobbish</h2>
-          <p className="project-detail-text-content">Starting with a very strong graphic concept, a parallel growth, the line becomes the protagonist of the visual identity. A line that grows, connects and marks a path both for the eye and the mind.</p>
-        </div>
-      </section>
-
-      <div className="project-detail-spacer"></div>
-
-      <section className="project-detail-fullscreen">
-        <div className="project-detail-fullscreen-image">
-          <img 
-            src={parallelScreen6} 
-            alt={project.title} 
-            className="project-detail-fullscreen-img"
-            onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
-          />
-        </div>
-      </section>
-
-      <div className="project-detail-spacer"></div>
-
-      <section className="project-detail-two-images">
-        <div className="project-detail-two-images-container">
-          <div className="project-detail-two-images-item">
-            <img 
-              src={parallelScreen4} 
-              alt={project.title} 
-              className="project-detail-two-images-img"
-              onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
-            />
-          </div>
-          <div className="project-detail-two-images-item">
-            <img 
-              src={parallelScreen51} 
-              alt={project.title} 
-              className="project-detail-two-images-img"
-              onError={(e) => { e.target.src = project.image || '/projects/2025-12-21%2001.48.57.jpg'; }} 
-            />
-          </div>
-        </div>
-      </section>
+      {media.map((m, i) => {
+        if (m.type === 'horizontal' && m.image_url_1) {
+          return (
+            <div key={m.id || i}>
+              <div className="project-detail-spacer" />
+              <section className="project-detail-fullscreen">
+                <div className="project-detail-fullscreen-image">
+                  <img 
+                    src={img(m.image_url_1)} 
+                    alt={project.name} 
+                    className="project-detail-fullscreen-img" 
+                    onError={(e) => { e.target.src = FALLBACK_IMG }}
+                    loading="lazy"
+                  />
+                </div>
+              </section>
+            </div>
+          )
+        }
+        if (m.type === 'two_verticals' && (m.image_url_1 || m.image_url_2)) {
+          return (
+            <div key={m.id || i}>
+              <div className="project-detail-spacer" />
+              <section className="project-detail-two-images">
+                <div className="project-detail-two-images-container">
+                  <div className="project-detail-two-images-item">
+                    <img 
+                      src={img(m.image_url_1)} 
+                      alt={project.name} 
+                      className="project-detail-two-images-img" 
+                      onError={(e) => { e.target.src = FALLBACK_IMG }}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="project-detail-two-images-item">
+                    <img 
+                      src={img(m.image_url_2)} 
+                      alt={project.name} 
+                      className="project-detail-two-images-img" 
+                      onError={(e) => { e.target.src = FALLBACK_IMG }}
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
+          )
+        }
+        return null
+      })}
     </div>
   )
 }
 
 export default ProjectDetail
-

@@ -2,30 +2,77 @@ import '../App.css'
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import ContactForm from '../components/ContactForm'
+import { fetchSiteSettings, fetchProjects, fetchMarqueeLogos } from '../lib/siteData'
+
+const DEFAULTS = {
+  heroText: 'an(y) designs',
+  description: 'UI/UX Designer indipendente. Collaboro con studi di design, startup e aziende, con un forte focus su user experience, web design art direction e design systems',
+  showreelUrl: 'https://cdn.jsdelivr.net/gh/pbaronio/media/homepage-gif.mp4',
+  whyUsText: 'Мы специализируемся на создании уникальных дизайнерских решений, которые сочетают в себе эстетику и функциональность. Наш подход основан на глубоком понимании потребностей клиентов и трендов современного дизайна.\n\nМы работаем с различными проектами - от корпоративных сайтов до брендинга и digital-стратегий. Каждый проект - это возможность создать что-то особенное и запоминающееся.',
+  contactEmail: 'info@example.com',
+  contactTelegram: '@yourusername',
+  contactImg: '/projects/2025-12-21%2001.48.57.jpg',
+  whyUsImg: '/projects/2025-12-21%2001.48.57.jpg',
+}
 
 function Home() {
+  const [settings, setSettings] = useState(null)
+  const [projects, setProjects] = useState([])
+  const [logos, setLogos] = useState([])
   const [displayedText, setDisplayedText] = useState('')
-  const fullText = 'an(y) designs'
   const [isTyping, setIsTyping] = useState(true)
+
+  const heroText = (settings?.hero_text || DEFAULTS.heroText).trim() || DEFAULTS.heroText
+
+  useEffect(() => {
+    let ok = true
+    Promise.all([
+      fetchSiteSettings().then((s) => { if (ok) setSettings(s) }),
+      fetchProjects({ onlyShowOnHome: true }).then((p) => { if (ok) setProjects(p) }),
+      fetchMarqueeLogos().then((l) => { if (ok) setLogos(l) }),
+    ]).catch(() => {})
+    return () => { ok = false }
+  }, [])
 
   useEffect(() => {
     if (!isTyping) return
-
     let currentIndex = 0
-    const typingSpeed = 120 // миллисекунды между символами (ускорено на 20%)
-
     const typeInterval = setInterval(() => {
-      if (currentIndex < fullText.length) {
-        setDisplayedText(fullText.slice(0, currentIndex + 1))
+      if (currentIndex < heroText.length) {
+        setDisplayedText(heroText.slice(0, currentIndex + 1))
         currentIndex++
       } else {
         setIsTyping(false)
         clearInterval(typeInterval)
       }
-    }, typingSpeed)
-
+    }, 120)
     return () => clearInterval(typeInterval)
-  }, [isTyping, fullText])
+  }, [isTyping, heroText])
+
+  const description = settings?.description_text || DEFAULTS.description
+  const showreelUrl = settings?.showreel_video_url || DEFAULTS.showreelUrl
+  const whyUsText = settings?.why_us_text || DEFAULTS.whyUsText
+  const whyUsImg = settings?.why_us_photo_url || DEFAULTS.whyUsImg
+  const contactEmail = settings?.contact_email || DEFAULTS.contactEmail
+  const contactTelegram = (settings?.contact_telegram || DEFAULTS.contactTelegram).replace(/^@/, '')
+  const contactImg = settings?.why_us_photo_url || DEFAULTS.contactImg
+
+  const telegramHref = contactTelegram.startsWith('http') ? contactTelegram : `https://t.me/${contactTelegram.replace(/^@/, '')}`
+
+  const logoItems = logos.length > 0
+    ? [...logos, ...logos].map((l, i) => (
+        <div key={i} className="logo-item">
+          <img src={l.url} alt={l.alt || ''} className="logo-image" onError={(e) => { e.target.style.display = 'none' }} />
+        </div>
+      ))
+    : (
+      <>
+        {['/logos/3ecff6a8-0075-4a53-b.png', '/logos/ab30587a-c1e1-4d51-8.png', '/logos/d1c428f6-e989-4630-8.png', '/logos/1d6fe783-432b-43ff-9.png', '/logos/209f2efd-d289-42d7-9.png'].flatMap((src, i) => [
+          <div key={`a-${i}`} className="logo-item"><img src={src} alt="" className="logo-image" onError={(e) => { e.target.style.display = 'none' }} /></div>,
+          <div key={`b-${i}`} className="logo-item"><img src={src} alt="" className="logo-image" onError={(e) => { e.target.style.display = 'none' }} /></div>,
+        ])}
+      </>
+    )
 
   return (
     <div className="page-fade-in">
@@ -36,20 +83,15 @@ function Home() {
         </div>
       </section>
       <section className="description-screen">
-        <div className="hero-description">
-          UI/UX Designer indipendente. Collaboro con studi di design, startup e aziende, con un forte focus su user experience, web design art direction e design systems
-        </div>
+        <div className="hero-description">{description}</div>
       </section>
       <section className="video-screen">
         <div className="showreel">
-          <video 
-            autoPlay 
-            muted 
-            playsInline 
-            loop 
-            src="https://cdn.jsdelivr.net/gh/pbaronio/media/homepage-gif.mp4" 
-            className="video about_img"
-          ></video>
+          {showreelUrl && (showreelUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+            <video autoPlay muted playsInline loop src={showreelUrl} className="video about_img" />
+          ) : (
+            <img src={showreelUrl} alt="" className="video about_img" onError={(e) => { e.target.style.display = 'none' }} />
+          ))}
         </div>
       </section>
       <section className="works-section">
@@ -66,60 +108,46 @@ function Home() {
       <section className="projects-grid-section">
         <div className="projects-grid-container">
           <div className="projects-grid">
-            <div className="project-card">
-              <div className="project-image">
-                <img src="/projects/2025-12-21%2001.48.57.jpg" alt="SERIE A" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <div className="project-info">
-                <span className="project-name">SERIE A</span>
-                <span className="project-designer">Design by Designer Name</span>
-              </div>
-            </div>
-            <div className="project-card">
-              <div className="project-image">
-                <img src="/projects/2025-12-21%2001.48.57.jpg" alt="ATLANTIS" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <div className="project-info">
-                <span className="project-name">ATLANTIS</span>
-                <span className="project-designer">Design by Designer Name</span>
-              </div>
-            </div>
-            <div className="project-card">
-              <div className="project-image">
-                <img src="/projects/2025-12-21%2001.48.57.jpg" alt="COMUNE DI BRESCIA" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <div className="project-info">
-                <span className="project-name">COMUNE DI BRESCIA</span>
-                <span className="project-designer">Design by Designer Name</span>
-              </div>
-            </div>
-            <div className="project-card">
-              <div className="project-image">
-                <img src="/projects/2025-12-21%2001.48.57.jpg" alt="ISTITUTO NAZIONALE DI GEOFISICA" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <div className="project-info">
-                <span className="project-name">ISTITUTO NAZIONALE DI GEOFISICA</span>
-                <span className="project-designer">Design by Designer Name</span>
-              </div>
-            </div>
-            <div className="project-card">
-              <div className="project-image">
-                <img src="/projects/2025-12-21%2001.48.57.jpg" alt="STEMA" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <div className="project-info">
-                <span className="project-name">STEMA</span>
-                <span className="project-designer">Design by Designer Name</span>
-              </div>
-            </div>
-            <div className="project-card">
-              <div className="project-image">
-                <img src="/projects/2025-12-21%2001.48.57.jpg" alt="SMANAPP" className="project-img" onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <div className="project-info">
-                <span className="project-name">SMANAPP</span>
-                <span className="project-designer">Design by Designer Name</span>
-              </div>
-            </div>
+            {projects.length > 0 ? projects.map((p) => {
+              // Добавляем версию к URL только если проект обновлялся (для обхода кэша при изменении)
+              const imgUrl = p.cover_image_url || '/projects/2025-12-21%2001.48.57.jpg'
+              const imgKey = p.updated_at ? `${imgUrl}?v=${new Date(p.updated_at).getTime()}` : imgUrl
+              return (
+                <Link 
+                  to={`/work/${p.slug}`} 
+                  key={`${p.id}-${p.updated_at || p.created_at}`} 
+                  className="project-card"
+                >
+                  <div className="project-image">
+                    <img 
+                      src={imgKey}
+                      alt={p.name || ''} 
+                      className="project-img" 
+                      onError={(e) => { e.target.style.display = 'none' }}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="project-info">
+                    <span className="project-name">{p.name || '—'}</span>
+                    <span className="project-designer">{p.subtitle || 'Design by Designer Name'}</span>
+                  </div>
+                </Link>
+              )
+            }) : (
+              <>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="project-card">
+                    <div className="project-image">
+                      <img src="/projects/2025-12-21%2001.48.57.jpg" alt="" className="project-img" onError={(e) => { e.target.style.display = 'none' }} />
+                    </div>
+                    <div className="project-info">
+                      <span className="project-name">—</span>
+                      <span className="project-designer">Design by Designer Name</span>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -133,11 +161,12 @@ function Home() {
           <h2 className="why-us-title">Why us</h2>
           <div className="why-us-content">
             <div className="why-us-image">
-              <img src="/projects/2025-12-21%2001.48.57.jpg" alt="Why us" className="why-us-img" onError={(e) => { e.target.style.display = 'none'; }} />
+              <img src={whyUsImg} alt="Why us" className="why-us-img" onError={(e) => { e.target.style.display = 'none' }} />
             </div>
             <div className="why-us-text">
-              <p>Мы специализируемся на создании уникальных дизайнерских решений, которые сочетают в себе эстетику и функциональность. Наш подход основан на глубоком понимании потребностей клиентов и трендов современного дизайна.</p>
-              <p>Мы работаем с различными проектами - от корпоративных сайтов до брендинга и digital-стратегий. Каждый проект - это возможность создать что-то особенное и запоминающееся.</p>
+              {whyUsText.split('\n\n').filter(Boolean).map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
             </div>
           </div>
         </div>
@@ -147,64 +176,32 @@ function Home() {
           <h2 className="contact-us-title">CONTACT US</h2>
           <div className="contact-us-content">
             <div className="contact-info-left">
-              <p className="contact-us-description">Reach out to us and let's collaborate on bringing your project to life.</p>
+              <p className="contact-us-description">Reach out to us and let&apos;s collaborate on bringing your project to life.</p>
               <div className="contact-info-item">
                 <div className="contact-info-label">EMAIL</div>
-                <a href="mailto:info@example.com" className="contact-info-value contact-button">info@example.com</a>
+                <a href={`mailto:${contactEmail}`} className="contact-info-value contact-button">{contactEmail}</a>
               </div>
               <div className="contact-info-item">
                 <div className="contact-info-label">TELEGRAM</div>
-                <a href="https://t.me/yourusername" target="_blank" rel="noopener noreferrer" className="contact-info-value contact-button">
+                <a href={telegramHref} target="_blank" rel="noopener noreferrer" className="contact-info-value contact-button">
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z" />
                   </svg>
-                  <span>@yourusername</span>
+                  <span>@{contactTelegram.replace(/^@/, '')}</span>
                 </a>
               </div>
             </div>
             <div className="contact-us-image">
-              <img src="/projects/2025-12-21%2001.48.57.jpg" alt="Contact" className="contact-img" />
+              <img src={contactImg} alt="Contact" className="contact-img" onError={(e) => { e.target.style.display = 'none' }} />
             </div>
           </div>
         </div>
       </section>
       <section className="logos-marquee-section">
         <div className="logos-marquee">
-          <div className="logos-marquee-track">
-            <div className="logo-item">
-              <img src="/logos/3ecff6a8-0075-4a53-b.png" alt="Сбер Банк" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/ab30587a-c1e1-4d51-8.png" alt="РЖД" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/d1c428f6-e989-4630-8.png" alt="Банк России" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/1d6fe783-432b-43ff-9.png" alt="Ростелеком" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/209f2efd-d289-42d7-9.png" alt="Департамент информационных технологий города Москвы" className="logo-image" />
-            </div>
-            {/* Дублируем для бесшовной анимации */}
-            <div className="logo-item">
-              <img src="/logos/3ecff6a8-0075-4a53-b.png" alt="Сбер Банк" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/ab30587a-c1e1-4d51-8.png" alt="РЖД" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/d1c428f6-e989-4630-8.png" alt="Банк России" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/1d6fe783-432b-43ff-9.png" alt="Ростелеком" className="logo-image" />
-            </div>
-            <div className="logo-item">
-              <img src="/logos/209f2efd-d289-42d7-9.png" alt="Департамент информационных технологий города Москвы" className="logo-image" />
-            </div>
-          </div>
+          <div className="logos-marquee-track">{logoItems}</div>
           <div className="logos-divider-container">
-            <div className="logos-divider"></div>
+            <div className="logos-divider" />
           </div>
         </div>
       </section>
@@ -214,4 +211,3 @@ function Home() {
 }
 
 export default Home
-

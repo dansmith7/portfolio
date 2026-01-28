@@ -12,6 +12,43 @@
   *:hover {
     cursor: none !important;
   }
+  
+  /* Восстанавливаем курсор в админке - переопределяем глобальное правило */
+  .admin-layout,
+  .admin-layout *,
+  .admin-login,
+  .admin-login * {
+    cursor: auto !important;
+  }
+  
+  /* Правильные курсоры для интерактивных элементов в админке */
+  .admin-layout input:not([disabled]),
+  .admin-layout textarea:not([disabled]),
+  .admin-layout select:not([disabled]),
+  .admin-layout button:not([disabled]),
+  .admin-layout a,
+  .admin-layout label,
+  .admin-login input:not([disabled]),
+  .admin-login textarea:not([disabled]),
+  .admin-login select:not([disabled]),
+  .admin-login button:not([disabled]),
+  .admin-login a,
+  .admin-login label {
+    cursor: pointer !important;
+  }
+  
+  .admin-layout input[disabled],
+  .admin-layout button[disabled],
+  .admin-login input[disabled],
+  .admin-login button[disabled] {
+    cursor: not-allowed !important;
+  }
+  
+  .admin-layout input[type="text"],
+  .admin-layout input[type="email"],
+  .admin-layout textarea {
+    cursor: text !important;
+  }
 }
 
 .App {
