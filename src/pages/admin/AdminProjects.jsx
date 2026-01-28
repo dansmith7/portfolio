@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
 import './Admin.css'
+
+let cachedProjects = null
+
+export function invalidateProjectsCache() {
+  cachedProjects = null
+}
 
 export default function AdminProjects() {
   const navigate = useNavigate()
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [projects, setProjects] = useState(cachedProjects ?? [])
+  const [loading, setLoading] = useState(!cachedProjects)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -14,40 +19,30 @@ export default function AdminProjects() {
   }, [])
 
   async function load() {
-    if (!supabase) {
-      setError('Supabase не настроен. Добавьте переменные в .env')
-      setLoading(false)
-      return
-    }
-    setLoading(true)
+    if (!cachedProjects) setLoading(true)
     setError('')
     try {
-      const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Таймаут: запрос к БД не ответил за 15 сек. Проверьте сеть.')), 15000)
-      )
-      const query = supabase
-        .from('projects')
-        .select('id,slug,name,subtitle,show_on_home,created_at')
-        .order('created_at', { ascending: false })
-      const { data, error: e } = await Promise.race([query, timeout])
-      if (e) throw e
-      setProjects(data ?? [])
+      const r = await fetch('/api/projects')
+      let data = null
+      try { data = await r.json() } catch (_) {}
+      const err = !r.ok && (data?.error || `HTTP ${r.status}`)
+      if (err) throw new Error(err)
+      const list = Array.isArray(data) ? data : []
+      cachedProjects = list
+      setProjects(list)
     } catch (e) {
       const msg = e.message || 'Ошибка загрузки'
-      if (msg.startsWith('Таймаут:')) {
-        setError(msg + ' Нажмите «Повторить» или «Добавить проект».')
-      } else if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist') || msg.includes('not find')) {
-        setError(
-          'Таблица projects не найдена. Выполните supabase-schema.sql в Supabase (SQL Editor). ' +
-          '(Точная ошибка: ' + msg + ')'
-        )
+      if (/relation|does not exist|schema cache|not find/i.test(msg)) {
+        setError('Таблица projects не найдена. Выполните supabase-schema.sql в Supabase (SQL Editor).')
       } else {
-        setError(msg)
+        setError(msg + ' Нажмите «Повторить» или «Добавить проект».')
       }
     } finally {
       setLoading(false)
     }
   }
+
+  const showSkeleton = loading && projects.length === 0 && !error
 
   return (
     <>
@@ -69,10 +64,18 @@ export default function AdminProjects() {
           </button>
         </div>
       )}
-      {loading && !error && <p>Загрузка…</p>}
-      {!loading && (
       <ul className="admin-projects-list">
-        {error ? (
+        {showSkeleton ? (
+          [...Array(5)].map((_, i) => (
+            <li key={i} className="admin-skeleton-item">
+              <div>
+                <span className="admin-skeleton admin-skeleton-title" />
+                <span className="admin-skeleton admin-skeleton-meta" />
+              </div>
+              <span className="admin-skeleton admin-skeleton-btn" />
+            </li>
+          ))
+        ) : error ? (
           <li style={{ color: '#666', listStyle: 'none' }}>
             Исправьте ошибку выше и обновите (F5) или нажмите «Повторить». Кнопка «Добавить проект» всегда доступна.
           </li>
@@ -95,7 +98,6 @@ export default function AdminProjects() {
           ))
         )}
       </ul>
-      )}
     </>
   )
 }

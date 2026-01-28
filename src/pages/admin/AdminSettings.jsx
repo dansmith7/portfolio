@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { clearCache } from '../../lib/siteData'
 import AdminMediaField from '../../components/admin/AdminMediaField'
 import './Admin.css'
 
@@ -24,18 +25,13 @@ export default function AdminSettings() {
   }, [])
 
   async function load() {
-    if (!supabase) {
-      setError('Supabase не настроен. Добавьте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env')
-      setLoading(false)
-      return
-    }
+    setError('')
     try {
-      const { data, error: e } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('id', SETTINGS_ID)
-        .single()
-      if (e) throw e
+      const r = await fetch('/api/settings')
+      let data = null
+      try { data = await r.json() } catch (_) {}
+      const err = !r.ok && (data?.error || `HTTP ${r.status}`)
+      if (err) throw new Error(err)
       if (data) setForm({
         hero_text: data.hero_text ?? '',
         description_text: data.description_text ?? '',
@@ -47,8 +43,8 @@ export default function AdminSettings() {
       })
     } catch (e) {
       const msg = e.message || 'Ошибка загрузки'
-      if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist')) {
-        setError('Таблица site_settings не найдена. Выполните скрипт supabase-schema.sql в Supabase: SQL Editor → New query → вставьте содержимое файла supabase-schema.sql из корня проекта → Run.')
+      if (/relation|does not exist|schema cache/i.test(msg)) {
+        setError('Таблица site_settings не найдена. Выполните supabase-schema.sql в Supabase (SQL Editor).')
       } else {
         setError(msg)
       }
@@ -70,6 +66,7 @@ export default function AdminSettings() {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' })
       if (e) throw e
+      clearCache()
     } catch (e) {
       const msg = e.message || 'Ошибка сохранения'
       if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist')) {
@@ -82,24 +79,23 @@ export default function AdminSettings() {
     }
   }
 
-  if (loading) return <p>Загрузка…</p>
-
   return (
     <>
       <div className="admin-header">
         <h1>Настройки сайта</h1>
-        <button type="button" onClick={save} disabled={saving} className="admin-btn">
+        <button type="button" onClick={save} disabled={saving || loading} className="admin-btn">
           {saving ? 'Сохранение…' : 'Сохранить'}
         </button>
       </div>
       {error && <div className="admin-error">{error}</div>}
-      <div className="admin-form">
+      <div className="admin-form" aria-busy={loading}>
         <label>
           Hero-текст
           <input
             type="text"
             value={form.hero_text}
             onChange={(e) => setForm((f) => ({ ...f, hero_text: e.target.value }))}
+            disabled={loading}
           />
         </label>
         <label>
@@ -107,6 +103,7 @@ export default function AdminSettings() {
           <textarea
             value={form.description_text}
             onChange={(e) => setForm((f) => ({ ...f, description_text: e.target.value }))}
+            disabled={loading}
           />
         </label>
         <AdminMediaField
@@ -114,12 +111,14 @@ export default function AdminSettings() {
           value={form.why_us_photo_url}
           onChange={(url) => setForm((f) => ({ ...f, why_us_photo_url: url }))}
           accept="image/*"
+          disabled={loading}
         />
         <label>
           Текст «Why us»
           <textarea
             value={form.why_us_text}
             onChange={(e) => setForm((f) => ({ ...f, why_us_text: e.target.value }))}
+            disabled={loading}
           />
         </label>
         <AdminMediaField
@@ -127,6 +126,7 @@ export default function AdminSettings() {
           value={form.showreel_video_url}
           onChange={(url) => setForm((f) => ({ ...f, showreel_video_url: url }))}
           accept="video/*"
+          disabled={loading}
         />
         <label>
           Email контактов
@@ -134,6 +134,7 @@ export default function AdminSettings() {
             type="email"
             value={form.contact_email}
             onChange={(e) => setForm((f) => ({ ...f, contact_email: e.target.value }))}
+            disabled={loading}
           />
         </label>
         <label>
@@ -143,6 +144,7 @@ export default function AdminSettings() {
             value={form.contact_telegram}
             onChange={(e) => setForm((f) => ({ ...f, contact_telegram: e.target.value }))}
             placeholder="@username"
+            disabled={loading}
           />
         </label>
       </div>

@@ -336,3 +336,49 @@
   margin-top: 0.25rem;
   font-size: 0.85rem;
 }
+
+/* Скелетоны списка (без «Загрузка…») */
+@keyframes admin-skeleton-shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.admin-skeleton-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  border: 1px solid #eee;
+  list-style: none;
+}
+
+.admin-skeleton-item .admin-skeleton {
+  display: inline-block;
+  background: #e5e5e5;
+  border-radius: 4px;
+  animation: admin-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.admin-skeleton-item .admin-skeleton-title {
+  display: block;
+  width: 140px;
+  height: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.admin-skeleton-item .admin-skeleton-meta {
+  display: block;
+  width: 200px;
+  height: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.admin-skeleton-item .admin-skeleton-btn {
+  width: 100px;
+  height: 2rem;
+  flex-shrink: 0;
+}

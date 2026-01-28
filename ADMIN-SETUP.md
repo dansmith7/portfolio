@@ -11,6 +11,11 @@
    VITE_SUPABASE_URL=https://ваш-проект.supabase.co
    VITE_SUPABASE_ANON_KEY=ваш-anon-key
    ```
+   Для локального запуска API (`vercel dev`) добавьте (сервер, не светить в клиент):
+   ```
+   SUPABASE_URL=https://ваш-проект.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=service_role ключ из Supabase → Settings → API
+   ```
 
 ## 2. База данных
 
@@ -41,7 +46,8 @@
 
 ## 5. Запуск
 
-- Сайт: `npm run dev` — главная по `http://localhost:3000/`
-- Админка: `http://localhost:3000/admin` → вход по логину/паролю из п.3
+- **Полный стек (фронт + API):** `vercel dev` — данные грузятся с сервера через `/api/*`. Нужны `SUPABASE_URL` и `SUPABASE_SERVICE_ROLE_KEY` в `.env`.
+- **Только фронт:** `npm run dev` — главная по `http://localhost:3000/`; API нет, данные не подгрузятся (fallback).
+- Админка: `http://localhost:3000/admin` → вход по логину/паролю из п.3.
 
 Поддомен для админки настраивается на этапе деплоя (отдельное приложение или правило в nginx/Vercel).
