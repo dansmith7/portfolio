@@ -74,7 +74,7 @@ export async function fetchProjects(opts = {}) {
   }
 }
 
-/** Один проект по slug + медиа (параллельная загрузка для скорости) */
+/** Один проект по slug + медиа (один запрос — быстрее) */
 export async function fetchProjectBySlug(slug) {
   if (!supabase || !slug) return null
   
@@ -83,33 +83,23 @@ export async function fetchProjectBySlug(slug) {
   if (cached !== null) return cached
   
   const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Таймаут загрузки проекта')), 3000)
+    setTimeout(() => reject(new Error('Таймаут загрузки проекта')), 5000)
   )
   try {
-    // Сначала загружаем проект
-    const projectQuery = supabase
-      .from('projects')
-      .select('*')
-      .eq('slug', slug)
-      .single()
+    const { data, error } = await Promise.race([
+      supabase
+        .from('projects')
+        .select('*, project_media(id,project_id,type,image_url_1,image_url_2,sort_order)')
+        .eq('slug', slug)
+        .single(),
+      timeout
+    ])
+    if (error || !data) return null
     
-    const { data: project, error: e1 } = await Promise.race([projectQuery, timeout])
-    if (e1 || !project) return null
-    
-    // Затем загружаем медиа параллельно (не блокируем если не успело)
-    let media = []
-    try {
-      const mediaQuery = supabase
-        .from('project_media')
-        .select('id,project_id,type,image_url_1,image_url_2,sort_order')
-        .eq('project_id', project.id)
-        .order('sort_order')
-      const { data: mediaData } = await Promise.race([mediaQuery, timeout])
-      media = mediaData ?? []
-    } catch {
-      // Если медиа не загрузилось - продолжаем без медиа
-    }
-    
+    const { project_media, ...project } = data
+    const media = [...(project_media ?? [])].sort(
+      (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    )
     const result = { ...project, media }
     setCached(cacheKey, result)
     return result

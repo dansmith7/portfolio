@@ -1,20 +1,23 @@
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Outlet } from 'react-router-dom'
-import { useEffect, useLayoutEffect, useState, useRef } from 'react'
+import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Home from './pages/Home'
-import Work from './pages/Work'
-import About from './pages/About'
-import ProjectDetail from './pages/ProjectDetail'
 import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import AdminGuard from './pages/admin/AdminGuard'
 import AdminLayout from './pages/admin/AdminLayout'
-import AdminLogin from './pages/admin/AdminLogin'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import AdminSettings from './pages/admin/AdminSettings'
-import AdminProjects from './pages/admin/AdminProjects'
-import AdminProjectEdit from './pages/admin/AdminProjectEdit'
+
+const Work = lazy(() => import('./pages/Work'))
+const About = lazy(() => import('./pages/About'))
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'))
+const AdminProjects = lazy(() => import('./pages/admin/AdminProjects'))
+const AdminProjectEdit = lazy(() => import('./pages/admin/AdminProjectEdit'))
+
+const PageFallback = () => <p style={{ padding: '2rem', textAlign: 'center' }}>Загрузка…</p>
 
 // Плавный скролл с Lenis
 function SmoothScroll({ lenisRef }) {
@@ -338,18 +341,20 @@ function AppContent() {
   if (isAdmin) {
     return (
       <AdminAuthProvider>
-        <Routes>
-          <Route path="/admin" element={<Outlet />}>
-            <Route path="login" element={<AdminLogin />} />
-            <Route element={<AdminGuard><AdminLayout /></AdminGuard>}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="settings" element={<AdminSettings />} />
-              <Route path="projects" element={<AdminProjects />} />
-              <Route path="projects/new" element={<AdminProjectEdit />} />
-              <Route path="projects/:projectSlug" element={<AdminProjectEdit />} />
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route path="/admin" element={<Outlet />}>
+              <Route path="login" element={<AdminLogin />} />
+              <Route element={<AdminGuard><AdminLayout /></AdminGuard>}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="projects" element={<AdminProjects />} />
+                <Route path="projects/new" element={<AdminProjectEdit />} />
+                <Route path="projects/:projectSlug" element={<AdminProjectEdit />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
+          </Routes>
+        </Suspense>
       </AdminAuthProvider>
     )
   }
@@ -372,12 +377,14 @@ function AppContent() {
         </header>
 
         <main className="main">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/work" element={<Work />} />
-            <Route path="/work/:projectId" element={<ProjectDetail />} />
-            <Route path="/about" element={<About />} />
-          </Routes>
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/work" element={<Work />} />
+              <Route path="/work/:projectId" element={<ProjectDetail />} />
+              <Route path="/about" element={<About />} />
+            </Routes>
+          </Suspense>
         </main>
 
         <footer className="footer">

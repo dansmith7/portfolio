@@ -33,12 +33,13 @@ export default function AdminProjectEdit() {
 
   async function load() {
     try {
-      const { data: project, error: e } = await supabase
+      const { data, error: e } = await supabase
         .from('projects')
-        .select('*')
+        .select('*, project_media(id,type,image_url_1,image_url_2,sort_order)')
         .eq('slug', projectSlug)
         .single()
       if (e) throw e
+      const project = data
       if (project) {
         setForm({
           slug: project.slug ?? '',
@@ -54,17 +55,17 @@ export default function AdminProjectEdit() {
           second_block_title: project.second_block_title ?? 'Premium, but not snobbish',
           second_block_text: project.second_block_text ?? '',
         })
-        const { data: media } = await supabase
-          .from('project_media')
-          .select('*')
-          .eq('project_id', project.id)
-          .order('sort_order')
-        setMediaBlocks((media ?? []).map((m) => ({
-          id: m.id,
-          type: m.type,
-          image_url_1: m.image_url_1 ?? '',
-          image_url_2: m.image_url_2 ?? '',
-        })))
+        const media = project.project_media ?? []
+        setMediaBlocks(
+          [...media]
+            .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            .map((m) => ({
+              id: m.id,
+              type: m.type,
+              image_url_1: m.image_url_1 ?? '',
+              image_url_2: m.image_url_2 ?? '',
+            }))
+        )
       }
     } catch (e) {
       setError(e.message || 'Ошибка загрузки')

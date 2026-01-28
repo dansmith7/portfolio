@@ -27,7 +27,7 @@ export default function AdminProjects() {
       )
       const query = supabase
         .from('projects')
-        .select('*')
+        .select('id,slug,name,subtitle,show_on_home,created_at')
         .order('created_at', { ascending: false })
       const { data, error: e } = await Promise.race([query, timeout])
       if (e) throw e
