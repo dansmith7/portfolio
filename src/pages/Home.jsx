@@ -1,8 +1,13 @@
 import '../App.css'
-import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import ContactForm from '../components/ContactForm'
-import { fetchSiteSettings, fetchProjects, fetchMarqueeLogos } from '../lib/siteData'
+import {
+  fetchSiteSettingsQuery,
+  fetchProjectsQuery,
+  fetchMarqueeLogosQuery,
+} from '../lib/siteDataQueries'
 
 const DEFAULTS = {
   heroText: 'an(y) designs',
@@ -16,23 +21,28 @@ const DEFAULTS = {
 }
 
 function Home() {
-  const [settings, setSettings] = useState(null)
-  const [projects, setProjects] = useState([])
-  const [logos, setLogos] = useState([])
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(true)
 
-  const heroText = (settings?.hero_text || DEFAULTS.heroText).trim() || DEFAULTS.heroText
+  const { data: settings } = useQuery({
+    queryKey: ['site_settings'],
+    queryFn: fetchSiteSettingsQuery,
+    staleTime: 1000 * 60 * 5,
+  })
 
-  useEffect(() => {
-    let ok = true
-    Promise.all([
-      fetchSiteSettings().then((s) => { if (ok) setSettings(s) }),
-      fetchProjects({ onlyShowOnHome: true }).then((p) => { if (ok) setProjects(p) }),
-      fetchMarqueeLogos().then((l) => { if (ok) setLogos(l) }),
-    ]).catch(() => {})
-    return () => { ok = false }
-  }, [])
+  const { data: projects = [], isLoading: projectsLoading } = useQuery({
+    queryKey: ['projects', 'home'],
+    queryFn: () => fetchProjectsQuery({ onlyShowOnHome: true }),
+    staleTime: 1000 * 60 * 5,
+  })
+
+  const { data: logos = [] } = useQuery({
+    queryKey: ['marquee_logos'],
+    queryFn: fetchMarqueeLogosQuery,
+    staleTime: 1000 * 60 * 5,
+  })
+
+  const heroText = (settings?.hero_text || DEFAULTS.heroText).trim() || DEFAULTS.heroText
 
   useEffect(() => {
     if (!isTyping) return
@@ -74,6 +84,9 @@ function Home() {
       </>
     )
 
+  const projectsList = Array.isArray(projects) ? projects : []
+  const showProjectsSkeleton = projectsLoading && projectsList.length === 0
+
   return (
     <div className="page-fade-in">
       <section className="hero-screen">
@@ -108,21 +121,30 @@ function Home() {
       <section className="projects-grid-section">
         <div className="projects-grid-container">
           <div className="projects-grid">
-            {projects.length > 0 ? projects.map((p) => {
-              // Добавляем версию к URL только если проект обновлялся (для обхода кэша при изменении)
+            {showProjectsSkeleton ? (
+              Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="project-card home-projects-skeleton">
+                  <div className="project-image" aria-hidden="true" />
+                  <div className="project-info">
+                    <div className="project-skeleton-line" />
+                    <div className="project-skeleton-line short" />
+                  </div>
+                </div>
+              ))
+            ) : projectsList.length > 0 ? projectsList.map((p) => {
               const imgUrl = p.cover_image_url || '/projects/2025-12-21%2001.48.57.jpg'
               const imgKey = p.updated_at ? `${imgUrl}?v=${new Date(p.updated_at).getTime()}` : imgUrl
               return (
-                <Link 
-                  to={`/work/${p.slug}`} 
-                  key={`${p.id}-${p.updated_at || p.created_at}`} 
+                <Link
+                  to={`/work/${p.slug}`}
+                  key={`${p.id}-${p.updated_at || p.created_at}`}
                   className="project-card"
                 >
                   <div className="project-image">
-                    <img 
+                    <img
                       src={imgKey}
-                      alt={p.name || ''} 
-                      className="project-img" 
+                      alt={p.name || ''}
+                      className="project-img"
                       onError={(e) => { e.target.style.display = 'none' }}
                       loading="lazy"
                     />
@@ -133,21 +155,7 @@ function Home() {
                   </div>
                 </Link>
               )
-            }) : (
-              <>
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="project-card">
-                    <div className="project-image">
-                      <img src="/projects/2025-12-21%2001.48.57.jpg" alt="" className="project-img" onError={(e) => { e.target.style.display = 'none' }} />
-                    </div>
-                    <div className="project-info">
-                      <span className="project-name">—</span>
-                      <span className="project-designer">Design by Designer Name</span>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
+            }) : null}
           </div>
         </div>
       </section>
@@ -209,5 +217,3 @@ function Home() {
     </div>
   )
 }
-
-export default Home

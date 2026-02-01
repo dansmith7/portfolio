@@ -1,9 +1,11 @@
 import './App.css'
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, Outlet } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Outlet, useNavigate } from 'react-router-dom'
 import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react'
+import { usePrefetchOnHover } from './hooks/usePrefetchOnHover'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Home from './pages/Home'
+import PreloadClickHandler from './components/PreloadClickHandler'
 import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import AdminGuard from './pages/admin/AdminGuard'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -331,12 +333,15 @@ function CustomCursor() {
 
 function AppContent() {
   const location = useLocation()
+  const navigate = useNavigate()
   const isAdmin = location.pathname.startsWith('/admin')
+  usePrefetchOnHover(!isAdmin)
   const isWorkPage = location.pathname === '/work'
   const isAboutPage = location.pathname === '/about'
   const isProjectPage = location.pathname.startsWith('/work/') && location.pathname !== '/work'
   const isStaticHeader = isWorkPage || isAboutPage || isProjectPage
   const lenisRef = useRef(null)
+
 
   if (isAdmin) {
     return (
@@ -362,6 +367,7 @@ function AppContent() {
   
   return (
     <div className={`App ${isWorkPage ? 'work-page-active' : ''}`}>
+      <PreloadClickHandler />
       <SmoothScroll lenisRef={lenisRef} />
       <CustomCursor />
       <header className={`header ${isStaticHeader ? 'header-static' : ''}`}>
@@ -416,7 +422,7 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="*" element={<AppContent />} />
       </Routes>

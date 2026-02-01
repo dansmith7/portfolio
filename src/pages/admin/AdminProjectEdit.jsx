@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { clearCache } from '../../lib/siteData'
-import { invalidateProjectsCache } from './AdminProjects'
+import { queryClient } from '../../lib/queryClient'
 import AdminMediaField from '../../components/admin/AdminMediaField'
 import './Admin.css'
 
@@ -35,11 +34,13 @@ export default function AdminProjectEdit() {
 
   async function load() {
     try {
-      const r = await fetch(`/api/project-by-slug?slug=${encodeURIComponent(projectSlug)}`)
-      let project = null
-      try { project = await r.json() } catch (_) {}
-      const err = !r.ok && (project?.error || `HTTP ${r.status}`)
-      if (err) throw new Error(err)
+      const { data, error: e } = await supabase
+        .from('projects')
+        .select('*, project_media(id,type,image_url_1,image_url_2,sort_order)')
+        .eq('slug', projectSlug)
+        .single()
+      if (e) throw e
+      const project = data
       if (project) {
         setForm({
           slug: project.slug ?? '',
@@ -55,7 +56,7 @@ export default function AdminProjectEdit() {
           second_block_title: project.second_block_title ?? 'Premium, but not snobbish',
           second_block_text: project.second_block_text ?? '',
         })
-        const media = project.media ?? project.project_media ?? []
+        const media = project.project_media ?? []
         setMediaBlocks(
           [...media]
             .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
@@ -116,8 +117,8 @@ export default function AdminProjectEdit() {
             sort_order: i,
           })
         }
-        clearCache()
-        invalidateProjectsCache()
+        queryClient.invalidateQueries({ queryKey: ['projects'] })
+        queryClient.invalidateQueries({ queryKey: ['project'] })
         const slug = form.slug || form.name?.toLowerCase().replace(/\s+/g, '-') || 'project'
         navigate(`/admin/projects/${slug}`)
       } else {
@@ -154,7 +155,8 @@ export default function AdminProjectEdit() {
           })
         }
       }
-      clearCache()
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: ['project'] })
     }
     try {
       await Promise.race([doSave(), timeout])
@@ -177,7 +179,16 @@ export default function AdminProjectEdit() {
     setMediaBlocks((prev) => prev.map((b, i) => (i === index ? { ...b, [field]: value } : b)))
   }
 
-  const busy = loading && !isNew
+  const formSkeleton = (
+    <div className="admin-form" aria-hidden="true">
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
+        <div key={i} style={{ marginBottom: '1rem' }}>
+          <div className="admin-skeleton admin-skeleton-line short" style={{ width: '28%', marginBottom: '0.4rem' }} />
+          <div className="admin-skeleton admin-skeleton-block" style={{ height: i >= 4 && i <= 7 ? '4rem' : '2.5rem' }} />
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <>
@@ -185,13 +196,16 @@ export default function AdminProjectEdit() {
         <h1>{isNew ? 'Новый проект' : 'Редактирование проекта'}</h1>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <Link to="/admin/projects" className="admin-btn secondary" style={{ textDecoration: 'none' }}>Назад</Link>
-          <button type="button" onClick={save} disabled={saving || busy} className="admin-btn">
+          <button type="button" onClick={save} disabled={saving} className="admin-btn">
             {saving ? 'Сохранение…' : 'Сохранить'}
           </button>
         </div>
       </div>
       {error && <div className="admin-error">{error}</div>}
-      <div className="admin-form" aria-busy={busy}>
+      {loading ? (
+        formSkeleton
+      ) : (
+      <div className="admin-form">
         <label>
           Slug (URL, например ingv)
           <input
@@ -199,7 +213,7 @@ export default function AdminProjectEdit() {
             value={form.slug}
             onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
             placeholder="ingv"
-            disabled={!isNew || busy}
+            disabled={!isNew}
           />
         </label>
         <AdminMediaField
@@ -207,7 +221,6 @@ export default function AdminProjectEdit() {
           value={form.cover_image_url}
           onChange={(url) => setForm((f) => ({ ...f, cover_image_url: url }))}
           accept="image/*"
-          disabled={busy}
         />
         <label>
           Название проекта
@@ -215,7 +228,6 @@ export default function AdminProjectEdit() {
             type="text"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            disabled={busy}
           />
         </label>
         <label>
@@ -225,7 +237,6 @@ export default function AdminProjectEdit() {
             value={form.subtitle}
             onChange={(e) => setForm((f) => ({ ...f, subtitle: e.target.value }))}
             placeholder="UX/UI Design • Design System"
-            disabled={busy}
           />
         </label>
         <div className="admin-checkbox-row">
@@ -234,7 +245,6 @@ export default function AdminProjectEdit() {
             id="show_on_home"
             checked={form.show_on_home}
             onChange={(e) => setForm((f) => ({ ...f, show_on_home: e.target.checked }))}
-            disabled={busy}
           />
           <label htmlFor="show_on_home" style={{ marginBottom: 0 }}>Отображать на главной (в блоке Latest works)</label>
         </div>
@@ -243,7 +253,6 @@ export default function AdminProjectEdit() {
           <textarea
             value={form.description_text}
             onChange={(e) => setForm((f) => ({ ...f, description_text: e.target.value }))}
-            disabled={busy}
           />
         </label>
         <label>
@@ -251,7 +260,6 @@ export default function AdminProjectEdit() {
           <textarea
             value={form.concept_text}
             onChange={(e) => setForm((f) => ({ ...f, concept_text: e.target.value }))}
-            disabled={busy}
           />
         </label>
         <label>
@@ -259,7 +267,6 @@ export default function AdminProjectEdit() {
           <textarea
             value={form.requirements_text}
             onChange={(e) => setForm((f) => ({ ...f, requirements_text: e.target.value }))}
-            disabled={busy}
           />
         </label>
         <label>
@@ -267,7 +274,6 @@ export default function AdminProjectEdit() {
           <textarea
             value={form.output_text}
             onChange={(e) => setForm((f) => ({ ...f, output_text: e.target.value }))}
-            disabled={busy}
           />
         </label>
         <AdminMediaField
@@ -275,7 +281,6 @@ export default function AdminProjectEdit() {
           value={form.first_horizontal_image_url}
           onChange={(url) => setForm((f) => ({ ...f, first_horizontal_image_url: url }))}
           accept="image/*"
-          disabled={busy}
         />
         <label>
           Заголовок второго описания
@@ -283,7 +288,6 @@ export default function AdminProjectEdit() {
             type="text"
             value={form.second_block_title}
             onChange={(e) => setForm((f) => ({ ...f, second_block_title: e.target.value }))}
-            disabled={busy}
           />
         </label>
         <label>
@@ -291,7 +295,6 @@ export default function AdminProjectEdit() {
           <textarea
             value={form.second_block_text}
             onChange={(e) => setForm((f) => ({ ...f, second_block_text: e.target.value }))}
-            disabled={busy}
           />
         </label>
 
@@ -300,10 +303,10 @@ export default function AdminProjectEdit() {
           Добавьте блоки: горизонтальное фото или два вертикальных.
         </p>
         <div style={{ marginTop: '0.5rem' }}>
-          <button type="button" onClick={() => addMediaBlock('horizontal')} className="admin-btn secondary" style={{ marginRight: '0.5rem' }} disabled={busy}>
+          <button type="button" onClick={() => addMediaBlock('horizontal')} className="admin-btn secondary" style={{ marginRight: '0.5rem' }}>
             + Горизонтальное фото
           </button>
-          <button type="button" onClick={() => addMediaBlock('two_verticals')} className="admin-btn secondary" disabled={busy}>
+          <button type="button" onClick={() => addMediaBlock('two_verticals')} className="admin-btn secondary">
             + Два вертикальных
           </button>
         </div>
@@ -317,7 +320,6 @@ export default function AdminProjectEdit() {
                   value={b.image_url_1}
                   onChange={(url) => updateMediaBlock(i, 'image_url_1', url)}
                   accept="image/*"
-                  disabled={busy}
                 />
               )}
               {b.type === 'two_verticals' && (
@@ -327,24 +329,23 @@ export default function AdminProjectEdit() {
                     value={b.image_url_1}
                     onChange={(url) => updateMediaBlock(i, 'image_url_1', url)}
                     accept="image/*"
-                    disabled={busy}
                   />
                   <AdminMediaField
                     label="Второе изображение"
                     value={b.image_url_2}
                     onChange={(url) => updateMediaBlock(i, 'image_url_2', url)}
                     accept="image/*"
-                    disabled={busy}
                   />
                 </>
               )}
               <div className="admin-actions-inline">
-                <button type="button" className="danger" onClick={() => removeMediaBlock(i)} disabled={busy}>Удалить</button>
+                <button type="button" className="danger" onClick={() => removeMediaBlock(i)}>Удалить</button>
               </div>
             </div>
           ))}
         </div>
       </div>
+      )}
     </>
   )
 }

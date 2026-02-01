@@ -4,6 +4,30 @@
   box-sizing: border-box;
 }
 
+/* App Preloader */
+.app-preloader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  z-index: 99999;
+}
+.app-preloader-content {
+  text-align: center;
+}
+.app-preloader-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2563eb;
+  animation: app-preloader-pulse 1.5s ease-in-out infinite;
+}
+@keyframes app-preloader-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 @media (hover: hover) and (pointer: fine) {
   * {
     cursor: none !important;
@@ -3338,5 +3362,30 @@
     letter-spacing: -0.03em;
     padding-bottom: 10px;
   }
+}
+
+/* Скелетоны для Work и Home (до загрузки из Supabase) */
+.project-skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #eee 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: project-skeleton-shimmer 1.2s ease-in-out infinite;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+.project-skeleton-line.short {
+  width: 65%;
+}
+@keyframes project-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.work-skeleton .project-card {
+  background: #f0f0f0;
+  min-height: 280px;
+}
+.home-projects-skeleton .project-image {
+  background: #f0f0f0;
+  min-height: 200px;
 }
 

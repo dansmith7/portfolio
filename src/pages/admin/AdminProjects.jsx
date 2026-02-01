@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
 import './Admin.css'
-
-let cachedProjects = null
-
-export function invalidateProjectsCache() {
-  cachedProjects = null
-}
 
 export default function AdminProjects() {
   const navigate = useNavigate()
-  const [projects, setProjects] = useState(cachedProjects ?? [])
-  const [loading, setLoading] = useState(!cachedProjects)
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -19,30 +14,40 @@ export default function AdminProjects() {
   }, [])
 
   async function load() {
-    if (!cachedProjects) setLoading(true)
+    if (!supabase) {
+      setError('Supabase не настроен. Добавьте переменные в .env')
+      setLoading(false)
+      return
+    }
+    setLoading(true)
     setError('')
     try {
-      const r = await fetch('/api/projects')
-      let data = null
-      try { data = await r.json() } catch (_) {}
-      const err = !r.ok && (data?.error || `HTTP ${r.status}`)
-      if (err) throw new Error(err)
-      const list = Array.isArray(data) ? data : []
-      cachedProjects = list
-      setProjects(list)
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Таймаут: запрос к БД не ответил за 15 сек. Проверьте сеть.')), 15000)
+      )
+      const query = supabase
+        .from('projects')
+        .select('id,slug,name,subtitle,show_on_home,created_at')
+        .order('created_at', { ascending: false })
+      const { data, error: e } = await Promise.race([query, timeout])
+      if (e) throw e
+      setProjects(data ?? [])
     } catch (e) {
       const msg = e.message || 'Ошибка загрузки'
-      if (/relation|does not exist|schema cache|not find/i.test(msg)) {
-        setError('Таблица projects не найдена. Выполните supabase-schema.sql в Supabase (SQL Editor).')
-      } else {
+      if (msg.startsWith('Таймаут:')) {
         setError(msg + ' Нажмите «Повторить» или «Добавить проект».')
+      } else if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist') || msg.includes('not find')) {
+        setError(
+          'Таблица projects не найдена. Выполните supabase-schema.sql в Supabase (SQL Editor). ' +
+          '(Точная ошибка: ' + msg + ')'
+        )
+      } else {
+        setError(msg)
       }
     } finally {
       setLoading(false)
     }
   }
-
-  const showSkeleton = loading && projects.length === 0 && !error
 
   return (
     <>
@@ -65,38 +70,38 @@ export default function AdminProjects() {
         </div>
       )}
       <ul className="admin-projects-list">
-        {showSkeleton ? (
-          [...Array(5)].map((_, i) => (
-            <li key={i} className="admin-skeleton-item">
-              <div>
-                <span className="admin-skeleton admin-skeleton-title" />
-                <span className="admin-skeleton admin-skeleton-meta" />
-              </div>
-              <span className="admin-skeleton admin-skeleton-btn" />
-            </li>
-          ))
-        ) : error ? (
-          <li style={{ color: '#666', listStyle: 'none' }}>
-            Исправьте ошибку выше и обновите (F5) или нажмите «Повторить». Кнопка «Добавить проект» всегда доступна.
-          </li>
-        ) : projects.length === 0 ? (
-          <li>Проектов пока нет. <button type="button" className="admin-link-btn" onClick={() => navigate('/admin/projects/new')}>Создать первый</button></li>
-        ) : (
-          projects.map((p) => (
-            <li key={p.id}>
-              <div>
-                <Link to={`/admin/projects/${p.slug || p.id}`}>{p.name || 'Без названия'}</Link>
-                <div className="admin-project-meta">
-                  {p.subtitle && <span>{p.subtitle}</span>}
-                  {p.show_on_home && <span> • На главной</span>}
+        {loading && !error
+          ? Array.from({ length: 5 }, (_, i) => (
+              <li key={i} className="admin-skeleton-row" aria-hidden="true">
+                <div className="left">
+                  <div className={`admin-skeleton admin-skeleton-line ${i % 2 ? 'medium' : 'long'}`} style={{ marginBottom: '0.35rem' }} />
+                  <div className="admin-skeleton admin-skeleton-line short" />
                 </div>
-              </div>
-              <Link to={`/admin/projects/${p.slug || p.id}`} className="admin-btn" style={{ textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem' }}>
-                Редактировать
-              </Link>
+                <div className="admin-skeleton right" />
+              </li>
+            ))
+          : error ? (
+            <li style={{ color: '#666', listStyle: 'none' }}>
+              Исправьте ошибку выше и обновите (F5) или нажмите «Повторить». Кнопка «Добавить проект» всегда доступна.
             </li>
-          ))
-        )}
+          ) : projects.length === 0 ? (
+            <li>Проектов пока нет. <button type="button" className="admin-link-btn" onClick={() => navigate('/admin/projects/new')}>Создать первый</button></li>
+          ) : (
+            projects.map((p) => (
+              <li key={p.id}>
+                <div>
+                  <Link to={`/admin/projects/${p.slug || p.id}`}>{p.name || 'Без названия'}</Link>
+                  <div className="admin-project-meta">
+                    {p.subtitle && <span>{p.subtitle}</span>}
+                    {p.show_on_home && <span> • На главной</span>}
+                  </div>
+                </div>
+                <Link to={`/admin/projects/${p.slug || p.id}`} className="admin-btn" style={{ textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem' }}>
+                  Редактировать
+                </Link>
+              </li>
+            ))
+          )}
       </ul>
     </>
   )

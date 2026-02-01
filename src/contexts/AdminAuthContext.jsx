@@ -12,14 +12,35 @@ export function AdminAuthProvider({ children }) {
       setLoading(false)
       return
     }
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    let cancelled = false
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setLoading(false)
+      }
+    }, 8000)
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!cancelled) {
+          setUser(session?.user ?? null)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setUser(null)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          clearTimeout(timeout)
+          setLoading(false)
+        }
+      })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      if (!cancelled) setUser(session?.user ?? null)
     })
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email, password) => {

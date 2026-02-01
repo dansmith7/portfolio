@@ -6,7 +6,7 @@ import { uploadFile } from '../../lib/uploadToSupabase'
  * Поле: ссылка ИЛИ загрузка файла с компьютера.
  * accept — например "image/*" или "image/*,video/*"
  */
-export default function AdminMediaField({ value, onChange, accept = 'image/*', label, disabled }) {
+export default function AdminMediaField({ value, onChange, accept = 'image/*', label }) {
   const inputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -38,7 +38,6 @@ export default function AdminMediaField({ value, onChange, accept = 'image/*', l
           onChange={(e) => onChange(e.target.value)}
           placeholder="Ссылка или загрузите файл"
           className="admin-media-field-input"
-          disabled={disabled}
         />
         {canUpload && (
           <>
@@ -52,7 +51,7 @@ export default function AdminMediaField({ value, onChange, accept = 'image/*', l
             <button
               type="button"
               className="admin-btn admin-media-field-btn"
-              disabled={uploading || disabled}
+              disabled={uploading}
               onClick={() => inputRef.current?.click()}
             >
               {uploading ? 'Загрузка…' : 'С компьютера'}

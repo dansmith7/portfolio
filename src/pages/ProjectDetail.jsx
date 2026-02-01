@@ -1,16 +1,15 @@
 import '../App.css'
 import { useParams, Link } from 'react-router-dom'
-import { useState, useEffect, useLayoutEffect } from 'react'
-import { fetchProjectBySlug } from '../lib/siteData'
+import { useQuery } from '@tanstack/react-query'
+import { useLayoutEffect } from 'react'
+import { usePreloadReady } from '../contexts/PreloadContext'
+import { fetchProjectBySlugQuery } from '../lib/siteDataQueries'
 
 const FALLBACK_IMG = '/projects/2025-12-21%2001.48.57.jpg'
 
 function ProjectDetail() {
   const { projectId } = useParams()
-  const [project, setProject] = useState(null)
-  const [loading, setLoading] = useState(true)
 
-  // Сброс скролла до отрисовки (useLayoutEffect) при переходе на страницу проекта
   useLayoutEffect(() => {
     if (window.location.hash) {
       window.history.replaceState(null, '', window.location.pathname)
@@ -20,50 +19,48 @@ function ProjectDetail() {
     document.body.scrollTop = 0
   }, [projectId])
 
-  useEffect(() => {
-    if (!projectId) {
-      setLoading(false)
-      return
-    }
-    
-    setLoading(true)
-    let cancelled = false
-    
-    fetchProjectBySlug(projectId)
-      .then((p) => {
-        if (!cancelled) {
-          setProject(p)
-          requestAnimationFrame(() => {
-            window.scrollTo(0, 0)
-            document.documentElement.scrollTop = 0
-            document.body.scrollTop = 0
-          })
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setProject(null)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    
-    return () => { 
-      cancelled = true
-    }
-  }, [projectId])
+  const { data: project, isLoading, isError } = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => fetchProjectBySlugQuery(projectId),
+    enabled: !!projectId,
+    staleTime: 1000 * 60 * 5,
+  })
 
-  if (loading) {
+  const hasContent = !!project || isError || !projectId
+  usePreloadReady(hasContent)
+
+  if (!projectId) {
     return (
       <div className="project-detail-page page-fade-in">
-        <p style={{ padding: '2rem', textAlign: 'center' }}>Загрузка…</p>
-        <p style={{ padding: '0 2rem 2rem', textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>
-          Если загрузка долгая, проверьте подключение к интернету или <Link to="/work">вернитесь к списку проектов</Link>.
-        </p>
+        <p style={{ padding: '2rem', textAlign: 'center' }}>Проект не указан.</p>
+        <p style={{ textAlign: 'center' }}><Link to="/work">Все проекты</Link></p>
       </div>
     )
   }
-  
-  if (!project) {
+
+  if (isLoading && !project) {
+    return (
+      <div className="project-detail-page page-fade-in">
+        <section className="project-detail-main">
+          <div className="project-detail-container">
+            <div className="project-detail-content">
+              <div className="project-detail-left" style={{ opacity: 0.5 }}>
+                <div className="project-skeleton-line" style={{ height: 48, maxWidth: 400, marginBottom: 24 }} />
+                <div className="project-skeleton-line" style={{ height: 80, marginBottom: 24 }} />
+                <div className="project-skeleton-line" style={{ height: 60, marginBottom: 16 }} />
+                <div className="project-skeleton-line" style={{ height: 60 }} />
+              </div>
+              <div className="project-detail-right">
+                <div className="project-skeleton-line" style={{ aspectRatio: '3/4', minHeight: 400 }} />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  if (!project || isError) {
     return (
       <div className="project-detail-page page-fade-in">
         <p style={{ padding: '2rem', textAlign: 'center' }}>Проект не найден.</p>
@@ -72,7 +69,6 @@ function ProjectDetail() {
     )
   }
 
-  // Добавляем версию к URL для обхода кэша при обновлении проекта
   const img = (url) => {
     const baseUrl = url || FALLBACK_IMG
     if (!url) return baseUrl
@@ -123,10 +119,10 @@ function ProjectDetail() {
             </div>
             <div className="project-detail-right">
               <div className="project-detail-image">
-                <img 
-                  src={img(project.cover_image_url)} 
-                  alt={project.name} 
-                  className="project-detail-img" 
+                <img
+                  src={img(project.cover_image_url)}
+                  alt={project.name}
+                  className="project-detail-img"
                   onError={(e) => { e.target.src = FALLBACK_IMG }}
                   loading="eager"
                 />
@@ -141,10 +137,10 @@ function ProjectDetail() {
           <div className="project-detail-spacer" />
           <section className="project-detail-fullscreen">
             <div className="project-detail-fullscreen-image">
-              <img 
-                src={img(project.first_horizontal_image_url)} 
-                alt={project.name} 
-                className="project-detail-fullscreen-img" 
+              <img
+                src={img(project.first_horizontal_image_url)}
+                alt={project.name}
+                className="project-detail-fullscreen-img"
                 onError={(e) => { e.target.src = FALLBACK_IMG }}
                 loading="lazy"
               />
@@ -172,10 +168,10 @@ function ProjectDetail() {
               <div className="project-detail-spacer" />
               <section className="project-detail-fullscreen">
                 <div className="project-detail-fullscreen-image">
-                  <img 
-                    src={img(m.image_url_1)} 
-                    alt={project.name} 
-                    className="project-detail-fullscreen-img" 
+                  <img
+                    src={img(m.image_url_1)}
+                    alt={project.name}
+                    className="project-detail-fullscreen-img"
                     onError={(e) => { e.target.src = FALLBACK_IMG }}
                     loading="lazy"
                   />
@@ -191,19 +187,19 @@ function ProjectDetail() {
               <section className="project-detail-two-images">
                 <div className="project-detail-two-images-container">
                   <div className="project-detail-two-images-item">
-                    <img 
-                      src={img(m.image_url_1)} 
-                      alt={project.name} 
-                      className="project-detail-two-images-img" 
+                    <img
+                      src={img(m.image_url_1)}
+                      alt={project.name}
+                      className="project-detail-two-images-img"
                       onError={(e) => { e.target.src = FALLBACK_IMG }}
                       loading="lazy"
                     />
                   </div>
                   <div className="project-detail-two-images-item">
-                    <img 
-                      src={img(m.image_url_2)} 
-                      alt={project.name} 
-                      className="project-detail-two-images-img" 
+                    <img
+                      src={img(m.image_url_2)}
+                      alt={project.name}
+                      className="project-detail-two-images-img"
                       onError={(e) => { e.target.src = FALLBACK_IMG }}
                       loading="lazy"
                     />
