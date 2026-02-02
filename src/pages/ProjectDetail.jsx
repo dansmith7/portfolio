@@ -1,5 +1,6 @@
 import '../App.css'
 import { useParams, Link } from 'react-router-dom'
+import DelayedLink from '../components/DelayedLink'
 import { useQuery } from '@tanstack/react-query'
 import { useLayoutEffect } from 'react'
 import { usePreloadReady } from '../contexts/PreloadContext'
@@ -33,7 +34,7 @@ function ProjectDetail() {
     return (
       <div className="project-detail-page page-fade-in">
         <p style={{ padding: '2rem', textAlign: 'center' }}>Проект не указан.</p>
-        <p style={{ textAlign: 'center' }}><Link to="/work">Все проекты</Link></p>
+        <p style={{ textAlign: 'center' }}><DelayedLink to="/work">Все проекты</DelayedLink></p>
       </div>
     )
   }
@@ -64,7 +65,7 @@ function ProjectDetail() {
     return (
       <div className="project-detail-page page-fade-in">
         <p style={{ padding: '2rem', textAlign: 'center' }}>Проект не найден.</p>
-        <p style={{ textAlign: 'center' }}><Link to="/work">Все проекты</Link></p>
+        <p style={{ textAlign: 'center' }}><DelayedLink to="/work">Все проекты</DelayedLink></p>
       </div>
     )
   }

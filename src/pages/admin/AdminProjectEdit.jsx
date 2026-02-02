@@ -87,10 +87,29 @@ export default function AdminProjectEdit() {
     )
     const doSave = async () => {
       if (isNew) {
+        // Генерируем уникальный slug
+        let baseSlug = form.slug || form.name?.toLowerCase().replace(/\s+/g, '-') || 'project'
+        baseSlug = baseSlug.replace(/[^a-z0-9-]/g, '') // Убираем спецсимволы
+        let uniqueSlug = baseSlug
+        let counter = 1
+        
+        // Проверяем уникальность slug
+        while (true) {
+          const { data: existing } = await supabase
+            .from('projects')
+            .select('id')
+            .eq('slug', uniqueSlug)
+            .single()
+          
+          if (!existing) break // Slug уникален
+          uniqueSlug = `${baseSlug}-${counter}`
+          counter++
+        }
+        
         const { data: inserted, error: insertErr } = await supabase
           .from('projects')
           .insert({
-            slug: form.slug || form.name?.toLowerCase().replace(/\s+/g, '-') || 'project',
+            slug: uniqueSlug,
             name: form.name,
             subtitle: form.subtitle,
             cover_image_url: form.cover_image_url,
@@ -119,8 +138,7 @@ export default function AdminProjectEdit() {
         }
         queryClient.invalidateQueries({ queryKey: ['projects'] })
         queryClient.invalidateQueries({ queryKey: ['project'] })
-        const slug = form.slug || form.name?.toLowerCase().replace(/\s+/g, '-') || 'project'
-        navigate(`/admin/projects/${slug}`)
+        navigate(`/admin/projects/${uniqueSlug}`)
       } else {
         const { data: existing } = await supabase.from('projects').select('id').eq('slug', projectSlug).single()
         if (!existing) throw new Error('Проект не найден')

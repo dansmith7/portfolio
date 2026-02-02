@@ -1,53 +1,158 @@
 /* Админка: общие стили */
 .admin-layout {
   min-height: 100vh;
+  height: 100vh; /* Фиксируем высоту на viewport */
   display: flex;
-  background: #f5f5f5;
+  background: #f8f9fa;
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  overflow-x: hidden !important; /* Строго скрываем горизонтальный скролл */
+  overflow-y: hidden; /* Убираем скролл с layout, скролл будет только в main */
+  width: 100%; /* Используем 100% вместо 100vw, чтобы избежать проблем со scrollbar */
+  max-width: 100%; /* Ограничиваем ширину */
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Глобальное правило для всех элементов админки - предотвращаем переполнение и применяем шрифт */
+.admin-layout *,
+.admin-layout *::before,
+.admin-layout *::after {
+  max-width: 100%;
+  box-sizing: border-box;
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 .admin-sidebar {
-  width: 220px;
-  background: #1a1a1a;
+  width: 260px;
+  min-width: 260px; /* Минимальная ширина для сайдбара */
+  max-width: 260px; /* Максимальная ширина для сайдбара */
+  background: #07243e; /* Цвет подвала */
   color: #fff;
-  padding: 1rem 0;
-}
-
-.admin-sidebar a {
-  display: block;
-  padding: 0.6rem 1.2rem;
-  color: #ccc;
-  text-decoration: none;
-}
-
-.admin-sidebar a:hover,
-.admin-sidebar a.active {
-  color: #fff;
-  background: rgba(255,255,255,0.08);
+  padding: 0;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* Не позволяет сайдбару сжиматься */
 }
 
 .admin-sidebar h2 {
-  padding: 0 1.2rem 0.8rem;
-  font-size: 0.9rem;
-  color: #888;
+  padding: 1.5rem 1.5rem 0.5rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
   text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-sidebar nav {
+  flex: 1;
+  padding: 0.5rem 0;
+}
+
+.admin-sidebar a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.admin-sidebar a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #3b82f6;
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+
+.admin-sidebar a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-sidebar a.active {
+  color: #fff;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.admin-sidebar a.active::before {
+  transform: scaleY(1);
+}
+
+.admin-sidebar .admin-logout-btn {
+  margin: 1rem 1.5rem 1.5rem;
+  padding: 0.65rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.admin-sidebar .admin-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fff;
 }
 
 .admin-main {
   flex: 1;
-  padding: 1.5rem 2rem;
-  overflow: auto;
+  padding: 2rem clamp(1rem, 2vw, 2rem); /* Уменьшенный адаптивный padding */
+  overflow-x: hidden !important; /* Строго скрываем горизонтальный скролл */
+  overflow-y: auto; /* Вертикальный скролл только здесь */
+  background: #f8f9fa;
+  min-width: 0; /* Позволяет flex-элементу сжиматься */
+  box-sizing: border-box; /* Padding учитывается в ширине */
+  width: 100%; /* Используем 100% вместо calc, flex сам рассчитает */
+  max-width: 100%; /* Ограничиваем ширину */
+  height: 100vh; /* Высота на весь viewport */
+  position: relative;
 }
 
 .admin-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Позволяет сжиматься */
+  gap: 1rem; /* Отступ между элементами */
 }
 
 .admin-header h1 {
-  font-size: 1.5rem;
+  flex: 1;
+  min-width: 0; /* Позволяет заголовку сжиматься */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-header .admin-btn {
+  flex-shrink: 0; /* Кнопка не сжимается */
+  white-space: nowrap;
+}
+
+.admin-header h1 {
+  font-size: 1.875rem;
   margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 .admin-login {
@@ -55,126 +160,236 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1a1a1a;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 .admin-login-card {
   background: #fff;
-  padding: 2rem;
-  border-radius: 8px;
+  padding: 2.5rem;
+  border-radius: 16px;
   width: 100%;
-  max-width: 360px;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 .admin-login-card h1 {
-  margin: 0 0 1.5rem;
-  font-size: 1.25rem;
+  margin: 0 0 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
 }
 
 .admin-login-card label {
   display: block;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
 }
 
 .admin-login-card input {
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
   margin-top: 0.25rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
   box-sizing: border-box;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.admin-login-card input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .admin-login-card button {
   width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.5rem;
-  background: #1a1a1a;
+  padding: 0.875rem;
+  margin-top: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .admin-login-card button:hover:not(:disabled) {
-  background: #333;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+}
+
+.admin-login-card button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .admin-login-card button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .admin-error {
-  color: #c00;
-  font-size: 0.85rem;
-  margin: 0.5rem 0;
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* Формы */
+.admin-form {
+  background: #fff;
+  padding: clamp(1rem, 2vw, 2rem); /* Адаптивный padding */
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  max-width: 100%; /* Изменено с 800px на 100%, чтобы не выходить за границы */
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Предотвращаем переполнение внутри формы */
+}
+
 .admin-form label {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem; /* Единый отступ между заголовком и полем ввода */
+  margin-bottom: 2.25rem; /* Отступ между группами полей (1.5rem * 1.5 = 2.25rem) */
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.5; /* Фиксированная высота строки для выравнивания */
 }
 
 .admin-form input[type="text"],
 .admin-form input[type="email"],
 .admin-form input[type="url"],
+.admin-form input[type="checkbox"],
 .admin-form textarea {
   width: 100%;
-  max-width: 480px;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  max-width: 100%; /* Изменено с 600px на 100%, чтобы не выходить за границы */
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
   box-sizing: border-box;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  background: #fff;
+  color: #0f172a;
+  margin-bottom: 0; /* Убираем отступ, так как он теперь в gap у label */
+}
+
+.admin-form input[type="checkbox"] {
+  width: auto;
+  max-width: none;
+  padding: 0;
+  cursor: pointer;
+  accent-color: #3b82f6;
+  margin-bottom: 0; /* Убираем отступ для чекбоксов, так как они в отдельном контейнере */
+}
+
+.admin-form input[type="text"]:focus,
+.admin-form input[type="email"]:focus,
+.admin-form input[type="url"]:focus,
+.admin-form textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .admin-form textarea {
-  min-height: 100px;
+  min-height: 120px;
   resize: vertical;
+  font-family: inherit;
 }
 
 .admin-form .admin-actions {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 0.75rem;
 }
 
 .admin-form .admin-actions button {
-  padding: 0.5rem 1rem;
-  background: #1a1a1a;
-  color: #fff;
+  padding: 0.75rem 1.5rem;
+  background: #07243e; /* Цвет подвала */
+  color: #fff; /* Белый текст */
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.admin-form .admin-actions button:hover {
-  background: #333;
+.admin-form .admin-actions button:hover:not(:disabled) {
+  background: #0a2d4f; /* Немного светлее при наведении */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .admin-form .admin-actions button.secondary {
-  background: #888;
-  margin-left: 0.5rem;
+  background: #64748b;
+}
+
+.admin-form .admin-actions button.secondary:hover:not(:disabled) {
+  background: #475569;
 }
 
 /* Загрузка файла */
 .admin-file-upload {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #cbd5e1;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Позволяет flex-элементам сжиматься */
+}
+
+.admin-file-upload:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
 }
 
 .admin-file-upload input[type="file"] {
   max-width: 280px;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
 }
 
 .admin-file-upload img {
-  max-width: 120px;
-  max-height: 80px;
+  max-width: 150px;
+  max-height: 100px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* Список проектов */
@@ -182,167 +397,299 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .admin-projects-list li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  padding: 1.25rem 1.5rem;
   background: #fff;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-  border: 1px solid #eee;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Позволяет flex-элементам сжиматься */
+  overflow: hidden; /* Предотвращаем переполнение */
+}
+
+.admin-projects-list li > div {
+  flex: 1;
+  min-width: 0; /* Позволяет тексту обрезаться */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-projects-list li .admin-btn {
+  flex-shrink: 0; /* Кнопка не сжимается */
+  white-space: nowrap; /* Текст кнопки не переносится */
+}
+
+.admin-projects-list li:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .admin-projects-list a {
-  color: #1a1a1a;
+  color: #0f172a;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: color 0.2s ease;
 }
 
 .admin-projects-list a:hover {
-  text-decoration: underline;
+  color: #3b82f6;
+}
+
+/* Кнопки в списке проектов должны иметь белый текст */
+.admin-projects-list .admin-btn {
+  color: #fff !important;
+}
+
+.admin-projects-list .admin-btn:hover {
+  color: #fff !important;
 }
 
 .admin-projects-list .admin-project-meta {
-  font-size: 0.85rem;
-  color: #666;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.25rem;
 }
 
 .admin-checkbox-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.admin-checkbox-row input {
-  width: auto;
+.admin-checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.admin-checkbox-row label {
+  margin: 0;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
 }
 
 .admin-link-btn {
   background: none;
   border: none;
   padding: 0;
-  color: #1a1a1a;
-  text-decoration: underline;
+  color: #3b82f6;
+  text-decoration: none;
   cursor: pointer;
   font-size: inherit;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
 .admin-link-btn:hover {
-  color: #333;
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 /* Медиа-блоки (горизонтальное / два вертикальных) */
 .admin-media-blocks {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 .admin-media-block {
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
+  background: #f8f9fa;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.admin-media-block:hover {
+  border-color: #cbd5e1;
 }
 
 .admin-media-block h4 {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .admin-media-block .admin-actions-inline {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .admin-media-block .admin-actions-inline button {
-  padding: 0.3rem 0.6rem;
+  padding: 0.5rem 1rem;
   font-size: 0.85rem;
-  background: #ddd;
+  background: #e2e8f0;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  color: #475569;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.admin-media-block .admin-actions-inline button:hover {
+  background: #cbd5e1;
 }
 
 .admin-media-block .admin-actions-inline button.danger {
-  background: #e8c4c4;
-  color: #8a2a2a;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-media-block .admin-actions-inline button.danger:hover {
+  background: #fecaca;
 }
 
 .admin-btn {
-  padding: 0.5rem 1rem;
-  background: #1a1a1a;
-  color: #fff;
+  padding: 0.625rem 1.25rem;
+  background: #07243e; /* Цвет подвала */
+  color: #fff; /* Белый текст */
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .admin-btn:hover:not(:disabled) {
-  background: #333;
+  background: #0a2d4f; /* Немного светлее при наведении */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.admin-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .admin-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .admin-btn.secondary {
-  background: #666;
+  background: #64748b;
 }
 
 .admin-btn.secondary:hover:not(:disabled) {
-  background: #555;
+  background: #475569;
 }
 
 /* Поле «ссылка или загрузка» */
 .admin-media-field {
   display: block;
-  margin-bottom: 0.75rem;
+  margin-bottom: 2.25rem; /* Отступ между группами полей (1.5rem * 1.5 = 2.25rem) */
   font-size: 0.9rem;
 }
 
 .admin-media-field-label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.875rem; /* Единый отступ между заголовком и строкой загрузки, как у обычных полей */
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.5; /* Фиксированная высота строки для выравнивания */
+  font-size: 0.875rem; /* Единый размер шрифта с обычными labels */
 }
 
 .admin-media-field-row {
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  max-width: 560px;
+  gap: 0.75rem;
+  align-items: stretch; /* Растягиваем элементы на одинаковую высоту */
+  max-width: 100%; /* Изменено с 600px на 100%, чтобы не выходить за границы */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-media-field-input {
   flex: 1;
   min-width: 0;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0 1rem; /* Убираем вертикальный padding, так как высота фиксирована */
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
   box-sizing: border-box;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  background: #fff;
+  height: 48px !important; /* Общая высота 48px (включая border) */
+  line-height: 48px; /* Высота строки для вертикального центрирования текста */
+  display: block;
+  margin: 0; /* Убираем возможные отступы */
 }
 
-.admin-media-field-btn {
+.admin-media-field-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.admin-media-field-btn,
+.admin-btn.admin-media-field-btn {
   flex-shrink: 0;
-  padding: 0.5rem 0.75rem;
+  padding: 0 1rem !important; /* Убираем вертикальный padding, так как высота фиксирована */
   font-size: 0.85rem;
+  background: #07243e !important; /* Цвет подвала */
+  color: #fff !important; /* Белый текст */
+  border: 2px solid transparent !important; /* Добавляем прозрачный border для одинаковой высоты */
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  height: 48px !important; /* Высота 48px, как у контейнера ввода */
+  line-height: 48px !important; /* Высота строки равна высоте элемента для вертикального центрирования */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap; /* Текст не переносится */
+  box-sizing: border-box;
+  margin: 0; /* Убираем возможные отступы */
+}
+
+.admin-media-field-btn:hover:not(:disabled) {
+  background: #0a2d4f; /* Немного светлее при наведении */
+  transform: translateY(-1px);
 }
 
 .admin-media-field-error {
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
   font-size: 0.85rem;
+  color: #dc2626;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
 }
 
 /* Скелетоны — без «Загрузка…», сразу каркас */
 .admin-skeleton {
-  background: linear-gradient(90deg, #e8e8e8 25%, #eee 50%, #e8e8e8 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
-  animation: admin-skeleton-shimmer 1.2s ease-in-out infinite;
-  border-radius: 4px;
+  animation: admin-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
 }
 
 @keyframes admin-skeleton-shimmer {
@@ -363,11 +710,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  padding: 1.25rem 1.5rem;
   background: #fff;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-  border: 1px solid #eee;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .admin-skeleton-row .left {
@@ -377,12 +725,14 @@
 
 .admin-skeleton-row .right {
   width: 100px;
-  height: 2rem;
+  height: 2.5rem;
   flex-shrink: 0;
   margin-left: 1rem;
+  border-radius: 8px;
 }
 
 .admin-skeleton-block {
   height: 2.5rem;
   margin-bottom: 0.75rem;
+  border-radius: 8px;
 }

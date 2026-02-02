@@ -6,6 +6,8 @@ import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Home from './pages/Home'
 import PreloadClickHandler from './components/PreloadClickHandler'
+import DelayedLink from './components/DelayedLink'
+import AppPreloader from './components/AppPreloader'
 import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import AdminGuard from './pages/admin/AdminGuard'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -367,16 +369,15 @@ function AppContent() {
   
   return (
     <div className={`App ${isWorkPage ? 'work-page-active' : ''}`}>
-      <PreloadClickHandler />
       <SmoothScroll lenisRef={lenisRef} />
       <CustomCursor />
       <header className={`header ${isStaticHeader ? 'header-static' : ''}`}>
           <div className="header-content">
-            <Link to="/" className="header-name header-name-visible">an(y) designs</Link>
+            <DelayedLink to="/" className="header-name header-name-visible">an(y) designs</DelayedLink>
             <nav className="nav">
-              <Link to="/">Home</Link>
-              <Link to="/work">Work</Link>
-              <Link to="/about">About</Link>
+              <DelayedLink to="/">Home</DelayedLink>
+              <DelayedLink to="/work">Work</DelayedLink>
+              <DelayedLink to="/about">About</DelayedLink>
               <Link to="/#contact-us">Contacts</Link>
             </nav>
           </div>
@@ -397,13 +398,13 @@ function AppContent() {
           <div className="footer-content">
             <div className="footer-left">
               <nav className="footer-nav">
-                <Link to="/">Home</Link>
-                <Link to="/work">Work</Link>
+                <DelayedLink to="/">Home</DelayedLink>
+                <DelayedLink to="/work">Work</DelayedLink>
               </nav>
             </div>
             <div className="footer-center">
               <nav className="footer-nav">
-                <Link to="/about">About</Link>
+                <DelayedLink to="/about">About</DelayedLink>
                 <Link to="/#contact-us">Contacts</Link>
               </nav>
             </div>
@@ -422,10 +423,12 @@ function AppContent() {
 
 function App() {
   return (
-    <Router future={{ v7_relativeSplatPath: true }}>
-      <Routes>
-        <Route path="*" element={<AppContent />} />
-      </Routes>
+    <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+      <AppPreloader>
+        <Routes>
+          <Route path="*" element={<AppContent />} />
+        </Routes>
+      </AppPreloader>
     </Router>
   )
 }

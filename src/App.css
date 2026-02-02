@@ -627,6 +627,7 @@
 .projects-grid-container {
   max-width: 100%;
   margin: 0 auto;
+  width: 100%;
 }
 
 .projects-grid {
@@ -634,6 +635,11 @@
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: 40px;
+  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
+  /* Центрируем сетку для равномерных отступов */
+  justify-content: center;
 }
 
 .work-page .projects-grid {
@@ -671,7 +677,7 @@
   cursor: pointer;
   text-decoration: none;
   color: inherit;
-  width: calc(33.333% - 27px);
+  width: calc((100% - 80px) / 3);
   transition: box-shadow 0.2s;
 }
 
@@ -1188,7 +1194,7 @@
   background-color: #07243e;
   padding: 120px 80px;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden; /* Скрываем обрезанные плашки */
   min-height: 400px;
   display: flex;
   align-items: center;
@@ -1478,7 +1484,7 @@
   }
   
   .project-card {
-    width: calc(33.333% - 27px);
+    width: calc((100% - 80px) / 3);
   }
   
   .work-page .projects-grid {
@@ -1723,7 +1729,7 @@
   }
   
   .project-card {
-    width: calc(33.333% - 27px);
+    width: calc((100% - 80px) / 3);
   }
   
   .work-page .projects-grid {
@@ -1844,7 +1850,7 @@
   }
   
   .project-card {
-    width: calc(50% - 20px);
+    width: calc((100% - 40px) / 2);
     min-height: 420px;
   }
   

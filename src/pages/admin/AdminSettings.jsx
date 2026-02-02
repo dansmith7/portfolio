@@ -159,9 +159,6 @@ export default function AdminSettings() {
         </label>
       </div>
       )}
-      <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
-        Логотипы бегущей строки редактируются в разделе «Логотипы» (можно добавить отдельную страницу или блок ниже).
-      </p>
     </>
   )
 }

@@ -21,15 +21,30 @@ export async function fetchSiteSettingsQuery() {
 }
 
 export async function fetchProjectsQuery(opts = {}) {
-  if (!supabase) return []
+  if (!supabase) {
+    console.error('[fetchProjectsQuery] Supabase не подключен!')
+    console.error('[fetchProjectsQuery] VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL ? '✅ задан' : '❌ отсутствует')
+    console.error('[fetchProjectsQuery] VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅ задан' : '❌ отсутствует')
+    return []
+  }
   let q = supabase
     .from('projects')
     .select('id,slug,name,subtitle,cover_image_url,show_on_home,created_at,updated_at')
     .order('created_at', { ascending: false })
   if (opts.onlyShowOnHome) q = q.eq('show_on_home', true)
-  const { data, error } = await withTimeout(q)
-  if (error) return []
-  return data ?? []
+  try {
+    const { data, error } = await withTimeout(q)
+    if (error) {
+      console.error('[fetchProjectsQuery] Ошибка Supabase:', error)
+      console.error('[fetchProjectsQuery] Код:', error.code, 'Сообщение:', error.message)
+      return []
+    }
+    console.log('[fetchProjectsQuery] Загружено проектов:', data?.length || 0)
+    return data ?? []
+  } catch (e) {
+    console.error('[fetchProjectsQuery] Исключение:', e.message)
+    return []
+  }
 }
 
 export async function fetchProjectBySlugQuery(slug) {

@@ -1,6 +1,7 @@
 import '../App.css'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import DelayedLink from '../components/DelayedLink'
 import { useQuery } from '@tanstack/react-query'
 import ContactForm from '../components/ContactForm'
 import {
@@ -135,7 +136,7 @@ function Home() {
               const imgUrl = p.cover_image_url || '/projects/2025-12-21%2001.48.57.jpg'
               const imgKey = p.updated_at ? `${imgUrl}?v=${new Date(p.updated_at).getTime()}` : imgUrl
               return (
-                <Link
+                <DelayedLink
                   to={`/work/${p.slug}`}
                   key={`${p.id}-${p.updated_at || p.created_at}`}
                   className="project-card"
@@ -153,16 +154,16 @@ function Home() {
                     <span className="project-name">{p.name || '—'}</span>
                     <span className="project-designer">{p.subtitle || 'Design by Designer Name'}</span>
                   </div>
-                </Link>
+                </DelayedLink>
               )
             }) : null}
           </div>
         </div>
       </section>
       <section className="see-other-works-section">
-        <Link to="/work" className="see-other-works-link">
+        <DelayedLink to="/work" className="see-other-works-link">
           <div className="see-other-works-button">View All Works</div>
-        </Link>
+        </DelayedLink>
       </section>
       <section className="why-us-section">
         <div className="why-us-container">
@@ -217,3 +218,5 @@ function Home() {
     </div>
   )
 }
+
+export default Home

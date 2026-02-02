@@ -96,7 +96,7 @@ export default function AdminProjects() {
                     {p.show_on_home && <span> • На главной</span>}
                   </div>
                 </div>
-                <Link to={`/admin/projects/${p.slug || p.id}`} className="admin-btn" style={{ textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem' }}>
+                <Link to={`/admin/projects/${p.slug || p.id}`} className="admin-btn" style={{ textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem', color: '#fff' }}>
                   Редактировать
                 </Link>
               </li>

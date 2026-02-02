@@ -56,6 +56,41 @@ function ContactForm() {
   
   // Примерная ширина плашки (нужно для расчета расстояния)
   const PLAQUE_WIDTH = 120
+  const PLAQUE_HEIGHT = 30
+  const PLAQUE_PADDING = 14 // padding-left и padding-right
+  const PLAQUE_MIN_WIDTH = 80
+  const PLAQUE_MAX_WIDTH = 150
+
+  // Функция для проверки, помещается ли плашка полностью в контейнер
+  const isPlaqueFullyVisible = (x, y, text, containerRect, angle = 0) => {
+    // Примерная ширина плашки зависит от длины текста
+    const estimatedTextWidth = text.length * 8 // примерная ширина символа
+    const plaqueWidth = Math.max(PLAQUE_MIN_WIDTH, Math.min(PLAQUE_MAX_WIDTH, estimatedTextWidth + PLAQUE_PADDING * 2))
+    const plaqueHeight = PLAQUE_HEIGHT
+    
+    // Учитываем угол поворота для расчета габаритов повернутого прямоугольника
+    const angleRad = Math.abs(angle) * Math.PI / 180
+    const cosAngle = Math.cos(angleRad)
+    const sinAngle = Math.sin(angleRad)
+    
+    // Вычисляем габариты повернутого прямоугольника
+    const rotatedWidth = Math.abs(plaqueWidth * cosAngle) + Math.abs(plaqueHeight * sinAngle)
+    const rotatedHeight = Math.abs(plaqueWidth * sinAngle) + Math.abs(plaqueHeight * cosAngle)
+    
+    // Проверяем границы с учетом поворота (плашка центрируется через translate(-50%, -50%))
+    const halfWidth = rotatedWidth / 2
+    const halfHeight = rotatedHeight / 2
+    
+    // Добавляем небольшой отступ для безопасности
+    const padding = 5
+    
+    return (
+      x - halfWidth - padding >= 0 &&
+      x + halfWidth + padding <= containerRect.width &&
+      y - halfHeight - padding >= 0 &&
+      y + halfHeight + padding <= containerRect.height
+    )
+  }
 
   useEffect(() => {
     const container = containerRef.current
@@ -75,25 +110,28 @@ function ContactForm() {
           lastPlaquePosRef.current = { x, y }
           totalDistanceRef.current = 0
           
-          // Создаем первую плашку сразу при входе
+          // Создаем первую плашку сразу при входе, только если она полностью видна
           const randomText = PLAQUE_TEXTS[Math.floor(Math.random() * PLAQUE_TEXTS.length)]
           const randomColor = PLAQUE_COLORS[Math.floor(Math.random() * PLAQUE_COLORS.length)]
           const angle = (Math.random() - 0.5) * 15
           
-          const createdAt = Date.now()
-          const fadeDelay = 2000 + Math.random() * 500 // 2-2.5 секунды
-          
-          setPlaques(prev => [...prev, {
-            id: createdAt + Math.random(),
-            x: x,
-            y: y,
-            text: randomText,
-            color: randomColor,
-            angle: angle,
-            opacity: 1,
-            createdAt: createdAt,
-            fadeStartTime: createdAt + fadeDelay // Время начала затухания
-          }])
+          // Проверяем, помещается ли плашка полностью с учетом угла поворота
+          if (isPlaqueFullyVisible(x, y, randomText, rect, angle)) {
+            const createdAt = Date.now()
+            const fadeDelay = 2000 + Math.random() * 500 // 2-2.5 секунды
+            
+            setPlaques(prev => [...prev, {
+              id: createdAt + Math.random(),
+              x: x,
+              y: y,
+              text: randomText,
+              color: randomColor,
+              angle: angle,
+              opacity: 1,
+              createdAt: createdAt,
+              fadeStartTime: createdAt + fadeDelay // Время начала затухания
+            }])
+          }
         } else {
           // Вычисляем расстояние от последней плашки
           if (lastPlaquePosRef.current) {
@@ -111,28 +149,36 @@ function ContactForm() {
               // Небольшой случайный угол для визуального эффекта (как на скриншотах)
               const angle = (Math.random() - 0.5) * 15 // от -7.5 до +7.5 градусов
               
-              // Создаем плашку в текущей позиции курсора
-              const createdAt = Date.now()
-              const fadeDelay = 2000 + Math.random() * 500 // 2-2.5 секунды
-              
-              setPlaques(prev => [...prev, {
-                id: createdAt + Math.random(),
-                x: x,
-                y: y,
-                text: randomText,
-                color: randomColor,
-                angle: angle,
-                opacity: 1,
-                createdAt: createdAt,
-                fadeStartTime: createdAt + fadeDelay // Время начала затухания
-              }])
-              
-              // Обновляем позицию последней плашки и сбрасываем счетчик расстояния
+              // Проверяем, помещается ли плашка полностью перед созданием с учетом угла поворота
+              if (isPlaqueFullyVisible(x, y, randomText, rect, angle)) {
+                // Создаем плашку в текущей позиции курсора
+                const createdAt = Date.now()
+                const fadeDelay = 2000 + Math.random() * 500 // 2-2.5 секунды
+                
+                setPlaques(prev => [...prev, {
+                  id: createdAt + Math.random(),
+                  x: x,
+                  y: y,
+                  text: randomText,
+                  color: randomColor,
+                  angle: angle,
+                  opacity: 1,
+                  createdAt: createdAt,
+                  fadeStartTime: createdAt + fadeDelay // Время начала затухания
+                }])
+                
+                // Обновляем позицию последней плашки и сбрасываем счетчик расстояния
+                lastPlaquePosRef.current = { x, y }
+                totalDistanceRef.current = 0
+              } else {
+                // Если плашка не помещается, просто обновляем позицию без создания
+                lastPlaquePosRef.current = { x, y }
+                totalDistanceRef.current = 0
+              }
+            } else {
+              // Обновляем позицию для следующего расчета расстояния
               lastPlaquePosRef.current = { x, y }
-              totalDistanceRef.current = 0
             }
-            // Обновляем позицию для следующего расчета расстояния
-            lastPlaquePosRef.current = { x, y }
           }
         }
       } else {
