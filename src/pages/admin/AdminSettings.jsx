@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { queryClient } from '../../lib/queryClient'
+import { broadcastAdminSave } from '../../lib/adminSync'
 import AdminMediaField from '../../components/admin/AdminMediaField'
 import './Admin.css'
 
@@ -72,6 +73,7 @@ export default function AdminSettings() {
         }, { onConflict: 'id' })
       if (e) throw e
       queryClient.invalidateQueries({ queryKey: ['site_settings'] })
+      broadcastAdminSave()
     } catch (e) {
       const msg = e.message || 'Ошибка сохранения'
       if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist')) {

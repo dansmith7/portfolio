@@ -2523,9 +2523,10 @@
   margin: 0 auto;
 }
 
+/* Фиксированный размер фото во всех проектах — как в Test projectennnnn */
 .project-detail-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 560px;
   gap: 80px;
   align-items: flex-start;
 }
@@ -2534,6 +2535,9 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .project-detail-title {
@@ -2544,6 +2548,8 @@
   font-family: 'Jost', Arial, sans-serif;
   line-height: 1.1;
   margin: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .project-detail-description {
@@ -2553,6 +2559,9 @@
   line-height: 1.6;
   letter-spacing: -0.01em;
   font-family: 'Jost', Arial, sans-serif;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
 }
 
 .project-detail-description p {
@@ -2565,29 +2574,37 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+  align-self: flex-start;
+  width: fit-content;
 }
 
 .project-detail-download-btn {
   display: inline-block;
-  background-color: #000000 !important;
-  border: 1px solid #000000 !important;
-  border-radius: 12px;
+  background-color: #ffffff !important;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 8px;
   padding: 14px 32px;
   font-size: 16px;
   font-weight: 400;
-  color: #ffffff !important;
+  color: #000000 !important;
   font-family: 'Jost', Arial, sans-serif;
   text-align: center;
   transition: background-color 0.2s, color 0.2s, border-color 0.2s;
   white-space: nowrap;
+  box-shadow: none;
+  filter: none;
+  opacity: 1;
 }
 
 .project-detail-download-link:hover .project-detail-download-btn,
 .project-detail-download-link:focus .project-detail-download-btn,
 .project-detail-download-btn:focus {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border-color: #d0d0d0 !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
 }
 
 .project-detail-section {
@@ -2641,6 +2658,9 @@
   line-height: 1.6;
   letter-spacing: -0.01em;
   font-family: 'Jost', Arial, sans-serif;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
 }
 
 .project-detail-section-content p {
@@ -2653,18 +2673,23 @@
   justify-content: flex-end;
   position: sticky;
   top: 100px;
+  width: 560px;
+  min-width: 560px;
+  flex-shrink: 0;
 }
 
 .project-detail-image {
-  width: 100%;
-  max-width: 100%;
+  width: 560px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
   position: relative;
+  flex-shrink: 0;
 }
 
 .project-detail-img {
   width: 100%;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
   display: block;
   border-radius: 4px;
 }
@@ -2831,6 +2856,13 @@
 
   .project-detail-right {
     position: static;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .project-detail-image {
+    width: 100%;
+    aspect-ratio: 3 / 4;
   }
 
   .project-detail-title {
@@ -3554,5 +3586,19 @@
 .home-projects-skeleton .project-image {
   background: #f0f0f0;
   min-height: 200px;
+}
+
+/* Download btn — как View All Works: белый фон по умолчанию (принудительно) */
+.project-detail-page .project-detail-download-btn {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #d0d0d0 !important;
+}
+.project-detail-page .project-detail-download-link:hover .project-detail-download-btn,
+.project-detail-page .project-detail-download-link:focus .project-detail-download-btn,
+.project-detail-page .project-detail-download-btn:focus {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #000000 !important;
 }
 

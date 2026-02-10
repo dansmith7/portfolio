@@ -95,14 +95,7 @@ function ProjectDetail() {
                   rel="noopener noreferrer"
                   className="project-detail-download-link"
                 >
-                  <span
-                    className="project-detail-download-btn"
-                    style={{
-                      backgroundColor: '#000000',
-                      color: '#ffffff',
-                      border: '1px solid #000000',
-                    }}
-                  >
+                  <span className="project-detail-download-btn">
                     Download project presentation
                   </span>
                 </a>

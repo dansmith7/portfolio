@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { queryClient } from '../../lib/queryClient'
+import { broadcastAdminSave } from '../../lib/adminSync'
 import AdminMediaField from '../../components/admin/AdminMediaField'
 import './Admin.css'
 
@@ -182,6 +183,7 @@ export default function AdminProjectEdit() {
       queryClient.invalidateQueries({ queryKey: ['project'] })
       queryClient.removeQueries({ queryKey: ['project', form.slug] })
       queryClient.removeQueries({ queryKey: ['project', projectSlug] })
+      broadcastAdminSave()
     }
     try {
       await Promise.race([doSave(), timeout])

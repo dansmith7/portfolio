@@ -51,9 +51,8 @@ export default function Footer() {
         }
       }
       
-      // Вычисляем ширину рабочей области от начала до конца "Contacts"
-      const safetyMargin = 0
-      const headerWorkingWidth = Math.max(headerEndX - headerStartX - safetyMargin, 100) // Минимум 100px
+      // Ширина от начала до конца "Contacts" — логотип по границе макета
+      const headerWorkingWidth = Math.max(headerEndX - headerStartX, 100)
       
       // Получаем позицию начала footer-logo-container и его padding
       const footerContainer = footerLogoRef.current.parentElement
@@ -112,10 +111,11 @@ export default function Footer() {
         }
       }
       
-      // Округляем вниз; на десктопе — бонус чтобы логотип доходил до конца "Contacts"
-      const reduction = isMobile ? 5 : 0
-      const desktopBonus = isMobile ? 0 : 25
-      bestSize = Math.max(50, Math.floor(bestSize) - reduction + desktopBonus)
+      // Десктоп: максимальный размер по границе макета; мобильный: небольшой запас
+      const finalSize = isMobile
+        ? Math.max(50, Math.floor(bestSize) - 5)
+        : Math.max(50, Math.round(bestSize))
+      bestSize = finalSize
 
       document.body.removeChild(tempElement)
       setLogoFontSize(bestSize)

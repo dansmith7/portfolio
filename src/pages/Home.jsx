@@ -117,17 +117,18 @@ function Home() {
         }
       }
       
-      // Вычисляем ширину рабочей области от начала до конца "Contacts"
-      const safetyMargin = 0
-      const headerWorkingWidth = Math.max(headerEndX - headerStartX - safetyMargin, 100) // Минимум 100px
-      
-      // Получаем позицию начала hero-screen и его padding
+      // Получаем hero-screen и его размеры
       const heroScreen = heroLogoRef.current.parentElement
       if (!heroScreen) return
       
       const heroScreenRect = heroScreen.getBoundingClientRect()
       const heroStyle = window.getComputedStyle(heroScreen)
       const heroPaddingLeft = parseFloat(heroStyle.paddingLeft) || 80
+      const heroPaddingRight = parseFloat(heroStyle.paddingRight) || 80
+      
+      // Ширина макета: до правой границы hero или до Contacts (что больше)
+      const heroRight = heroScreenRect.right - heroPaddingRight
+      const headerWorkingWidth = Math.max(heroRight - headerStartX, headerEndX - headerStartX, 100)
       const heroScreenStartX = heroScreenRect.left + heroPaddingLeft
       
       // Выравниваем hero-logo по началу рабочей области header
@@ -181,10 +182,11 @@ function Home() {
         }
       }
       
-      // Округляем вниз; на десктопе — бонус чтобы логотип доходил до конца "Contacts"
-      const reduction = isMobile ? 5 : 0
-      const desktopBonus = isMobile ? 0 : 25
-      bestSize = Math.max(50, Math.floor(bestSize) - reduction + desktopBonus)
+      // Десктоп: максимальный размер по границе макета; мобильный: небольшой запас
+      const finalSize = isMobile
+        ? Math.max(50, Math.floor(bestSize) - 5)
+        : Math.max(50, Math.round(bestSize))
+      bestSize = finalSize
 
       document.body.removeChild(tempElement)
       setLogoFontSize(bestSize)
