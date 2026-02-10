@@ -1,5 +1,5 @@
 import '../App.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import DelayedLink from '../components/DelayedLink'
 import { useQuery } from '@tanstack/react-query'
@@ -11,7 +11,7 @@ import {
 } from '../lib/siteDataQueries'
 
 const DEFAULTS = {
-  heroText: 'an(y) designs',
+  heroText: 'an(y)  designs',
   description: 'UI/UX Designer indipendente. Collaboro con studi di design, startup e aziende, con un forte focus su user experience, web design art direction e design systems',
   showreelUrl: 'https://cdn.jsdelivr.net/gh/pbaronio/media/homepage-gif.mp4',
   whyUsText: 'Мы специализируемся на создании уникальных дизайнерских решений, которые сочетают в себе эстетику и функциональность. Наш подход основан на глубоком понимании потребностей клиентов и трендов современного дизайна.\n\nМы работаем с различными проектами - от корпоративных сайтов до брендинга и digital-стратегий. Каждый проект - это возможность создать что-то особенное и запоминающееся.',
@@ -24,6 +24,8 @@ const DEFAULTS = {
 function Home() {
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(true)
+  const heroLogoRef = useRef(null)
+  const [logoFontSize, setLogoFontSize] = useState(360)
 
   const { data: settings } = useQuery({
     queryKey: ['site_settings'],
@@ -44,6 +46,19 @@ function Home() {
   })
 
   const heroText = (settings?.hero_text || DEFAULTS.heroText).trim() || DEFAULTS.heroText
+  
+  // Разделяем текст на две части для мобильной версии (две строки)
+  // Ищем место разделения: после закрывающей скобки перед "designs"
+  // Например: "an(y)  designs" -> "an(y) " и "designs"
+  const splitPattern = /\)\s+designs/i
+  const match = heroText.match(splitPattern)
+  let splitIndex = match ? match.index + match[0].indexOf('designs') : -1
+  // Fallback: если не нашлось, ищем "designs" в тексте
+  if (splitIndex <= 0 && heroText.toLowerCase().includes('designs')) {
+    splitIndex = heroText.toLowerCase().indexOf('designs')
+  }
+  const heroTextFirst = splitIndex > 0 ? heroText.slice(0, splitIndex).trimEnd() + ' ' : heroText
+  const heroTextSecond = splitIndex > 0 ? heroText.slice(splitIndex).trimStart() : ''
 
   useEffect(() => {
     if (!isTyping) return
@@ -59,6 +74,148 @@ function Home() {
     }, 120)
     return () => clearInterval(typeInterval)
   }, [isTyping, heroText])
+
+  // Автоматический подбор размера шрифта для точного соответствия ширине рабочей области
+  useEffect(() => {
+    let retryCount = 0
+    const maxRetries = 5
+
+    const adjustFontSize = () => {
+      if (!heroLogoRef.current) {
+        if (retryCount++ < maxRetries) setTimeout(adjustFontSize, 50)
+        return
+      }
+
+      const headerContent = document.querySelector('.header-content')
+      if (!headerContent) {
+        if (retryCount++ < maxRetries) setTimeout(adjustFontSize, 50)
+        return
+      }
+
+      // Получаем реальные отступы header
+      const headerStyle = window.getComputedStyle(headerContent)
+      const headerPaddingLeft = parseFloat(headerStyle.paddingLeft) || 80
+      const headerPaddingRight = parseFloat(headerStyle.paddingRight) || 80
+      
+      // Получаем позицию начала рабочей области header
+      const headerRect = headerContent.getBoundingClientRect()
+      const headerStartX = headerRect.left + headerPaddingLeft
+      
+      // Находим элемент "Contacts" в header для измерения его правой границы
+      const contactsLink = headerContent.querySelector('a[href*="contact"], a[href*="#contact-us"]')
+      let headerEndX = headerRect.right - headerPaddingRight // Fallback: конец рабочей области
+      
+      if (contactsLink) {
+        const contactsRect = contactsLink.getBoundingClientRect()
+        headerEndX = contactsRect.right
+      } else {
+        // Если не нашли ссылку, ищем текст "Contacts" в nav
+        const nav = headerContent.querySelector('.nav')
+        if (nav) {
+          const navRect = nav.getBoundingClientRect()
+          headerEndX = navRect.right
+        }
+      }
+      
+      // Вычисляем ширину рабочей области от начала до конца "Contacts"
+      const safetyMargin = 0
+      const headerWorkingWidth = Math.max(headerEndX - headerStartX - safetyMargin, 100) // Минимум 100px
+      
+      // Получаем позицию начала hero-screen и его padding
+      const heroScreen = heroLogoRef.current.parentElement
+      if (!heroScreen) return
+      
+      const heroScreenRect = heroScreen.getBoundingClientRect()
+      const heroStyle = window.getComputedStyle(heroScreen)
+      const heroPaddingLeft = parseFloat(heroStyle.paddingLeft) || 80
+      const heroScreenStartX = heroScreenRect.left + heroPaddingLeft
+      
+      // Выравниваем hero-logo по началу рабочей области header
+      const offset = headerStartX - heroScreenStartX
+      heroLogoRef.current.style.marginLeft = `${offset}px`
+
+      // Проверяем мобильную версию
+      const isMobile = window.matchMedia('(max-width: 768px)').matches
+      
+      // Создаем временный элемент для измерения ширины текста
+      const tempElement = document.createElement('span')
+      tempElement.style.position = 'absolute'
+      tempElement.style.visibility = 'hidden'
+      tempElement.style.whiteSpace = 'nowrap'
+      tempElement.style.fontFamily = "'Jost', Arial, sans-serif"
+      tempElement.style.fontWeight = '400'
+      tempElement.style.letterSpacing = isMobile ? '-0.03em' : '-0.04em'
+      
+      let textToMeasure = heroText
+      
+      // В мобильной версии (≤768px) измеряем самую длинную строку (две строки)
+      if (isMobile && splitIndex > 0) {
+        const firstLine = heroTextFirst
+        const secondLine = heroTextSecond
+        textToMeasure = firstLine.length > secondLine.length ? firstLine : secondLine
+      } else {
+        textToMeasure = heroText
+      }
+      
+      tempElement.textContent = textToMeasure
+      document.body.appendChild(tempElement)
+
+      // UX: Бинарный поиск максимального размера шрифта, при котором текст ВПИСЫВАЕТСЯ в рабочую область
+      // Принцип: никогда не допускаем переполнения — если не вписывается, уменьшаем кегль
+      let minSize = 50
+      let maxSize = 500
+      let bestSize = 360
+
+      for (let i = 0; i < 40; i++) {
+        const testSize = (minSize + maxSize) / 2
+        tempElement.style.fontSize = `${testSize}px`
+        const textWidth = tempElement.offsetWidth
+
+        if (textWidth <= headerWorkingWidth) {
+          // Текст помещается — сохраняем и ищем больший размер
+          minSize = testSize
+          bestSize = testSize
+        } else {
+          // Текст не помещается — уменьшаем максимальный размер
+          maxSize = testSize
+        }
+      }
+      
+      // Округляем вниз; на десктопе — бонус чтобы логотип доходил до конца "Contacts"
+      const reduction = isMobile ? 5 : 0
+      const desktopBonus = isMobile ? 0 : 25
+      bestSize = Math.max(50, Math.floor(bestSize) - reduction + desktopBonus)
+
+      document.body.removeChild(tempElement)
+      setLogoFontSize(bestSize)
+      // Применяем напрямую к DOM с !important для переопределения CSS на мобильных
+      if (heroLogoRef.current) {
+        heroLogoRef.current.style.setProperty('font-size', `${bestSize}px`, 'important')
+      }
+    }
+
+    // Вызываем один раз после рендеринга (requestAnimationFrame не блокирует загрузку)
+    const rafId = requestAnimationFrame(() => {
+      setTimeout(adjustFontSize, 0)
+    })
+
+    let resizeTimer
+    const resizeHandler = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(adjustFontSize, 100)
+    }
+    const orientationHandler = () => setTimeout(adjustFontSize, 100)
+
+    window.addEventListener('resize', resizeHandler)
+    window.addEventListener('orientationchange', orientationHandler)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      clearTimeout(resizeTimer)
+      window.removeEventListener('resize', resizeHandler)
+      window.removeEventListener('orientationchange', orientationHandler)
+    }
+  }, [heroText, splitIndex, heroTextFirst, heroTextSecond])
 
   const description = settings?.description_text || DEFAULTS.description
   const showreelUrl = settings?.showreel_video_url || DEFAULTS.showreelUrl
@@ -91,9 +248,27 @@ function Home() {
   return (
     <div className="page-fade-in">
       <section className="hero-screen">
-        <div className="hero-logo">
-          {displayedText}
-          {isTyping && <span className="typewriter-cursor">|</span>}
+        <div className="hero-logo" ref={heroLogoRef} style={{ fontSize: `${logoFontSize}px` }}>
+          <span className="hero-logo-line hero-logo-first">
+            {splitIndex > 0 && displayedText.length <= splitIndex
+              ? displayedText
+              : splitIndex > 0
+              ? heroTextFirst
+              : displayedText}
+          </span>
+          {splitIndex > 0 && (
+            <span className="hero-logo-line hero-logo-second">
+              {displayedText.length > splitIndex
+                ? displayedText.slice(splitIndex).trim()
+                : ''}
+              {isTyping && displayedText.length > splitIndex && (
+                <span className="typewriter-cursor">|</span>
+              )}
+            </span>
+          )}
+          {isTyping && (splitIndex <= 0 || displayedText.length <= splitIndex) && (
+            <span className="typewriter-cursor">|</span>
+          )}
         </div>
       </section>
       <section className="description-screen">

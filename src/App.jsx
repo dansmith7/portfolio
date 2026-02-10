@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import PreloadClickHandler from './components/PreloadClickHandler'
 import DelayedLink from './components/DelayedLink'
 import AppPreloader from './components/AppPreloader'
+import Footer from './components/Footer'
 import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import AdminGuard from './pages/admin/AdminGuard'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -19,7 +20,8 @@ const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'))
 const AdminProjects = lazy(() => import('./pages/admin/AdminProjects'))
-const AdminProjectEdit = lazy(() => import('./pages/admin/AdminProjectEdit'))
+// Прямой импорт — lazy загружает chunk, который кэшируется браузером и не обновляется
+import AdminProjectEdit from './pages/admin/AdminProjectEdit'
 
 const PageFallback = () => <p style={{ padding: '2rem', textAlign: 'center' }}>Загрузка…</p>
 
@@ -373,7 +375,7 @@ function AppContent() {
       <CustomCursor />
       <header className={`header ${isStaticHeader ? 'header-static' : ''}`}>
           <div className="header-content">
-            <DelayedLink to="/" className="header-name header-name-visible">an(y) designs</DelayedLink>
+            <DelayedLink to="/" className="header-name header-name-visible">an(y)  designs</DelayedLink>
             <nav className="nav">
               <DelayedLink to="/">Home</DelayedLink>
               <DelayedLink to="/work">Work</DelayedLink>
@@ -394,29 +396,7 @@ function AppContent() {
           </Suspense>
         </main>
 
-        <footer className="footer">
-          <div className="footer-content">
-            <div className="footer-left">
-              <nav className="footer-nav">
-                <DelayedLink to="/">Home</DelayedLink>
-                <DelayedLink to="/work">Work</DelayedLink>
-              </nav>
-            </div>
-            <div className="footer-center">
-              <nav className="footer-nav">
-                <DelayedLink to="/about">About</DelayedLink>
-                <Link to="/#contact-us">Contacts</Link>
-              </nav>
-            </div>
-            <div className="footer-right">
-              <a href="mailto:info@ani.designs.com" className="footer-email">info@ani.designs.com</a>
-              <div className="footer-copyright">©2025</div>
-            </div>
-          </div>
-          <div className="footer-logo-container">
-            <div className="footer-logo">an(y) designs</div>
-          </div>
-        </footer>
+        <Footer />
       </div>
   )
 }

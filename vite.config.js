@@ -22,8 +22,14 @@ export default defineConfig(({ mode }) => {
       },
     ],
     server: {
-      port: 3000,
+      port: 3002,
+      strictPort: false,
       open: true,
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
     },
     build: {
       rollupOptions: {

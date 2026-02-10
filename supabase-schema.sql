@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS public.projects (
   first_horizontal_image_url TEXT,
   second_block_title TEXT DEFAULT 'Premium, but not snobbish',
   second_block_text TEXT,
+  presentation_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -5,7 +5,7 @@ function Logo({ isScrolled, isHomePage }) {
       : 'logo logo--hero'
     : 'logo logo--header'
 
-  return <div className={logoClass}>an(y) designs</div>
+  return <div className={logoClass}>an(y)  designs</div>
 }
 
 export default Logo

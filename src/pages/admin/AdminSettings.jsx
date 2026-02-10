@@ -11,7 +11,7 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
-    hero_text: 'an(y) designs',
+    hero_text: 'an(y)  designs',
     description_text: '',
     why_us_photo_url: '',
     why_us_text: '',

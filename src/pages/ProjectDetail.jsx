@@ -24,7 +24,8 @@ function ProjectDetail() {
     queryKey: ['project', projectId],
     queryFn: () => fetchProjectBySlugQuery(projectId),
     enabled: !!projectId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   const hasContent = !!project || isError || !projectId
@@ -87,6 +88,25 @@ function ProjectDetail() {
               <div className="project-detail-description">
                 <p>{project.description_text}</p>
               </div>
+              {project.presentation_url && (
+                <a
+                  href={project.presentation_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-detail-download-link"
+                >
+                  <span
+                    className="project-detail-download-btn"
+                    style={{
+                      backgroundColor: '#000000',
+                      color: '#ffffff',
+                      border: '1px solid #000000',
+                    }}
+                  >
+                    Download project presentation
+                  </span>
+                </a>
+              )}
               <div className="project-detail-section project-detail-section-hidden">
                 <h2 className="project-detail-section-title">Visual identity /25</h2>
               </div>

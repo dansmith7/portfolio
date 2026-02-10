@@ -25,6 +25,7 @@ export default function AdminProjectEdit() {
     first_horizontal_image_url: '',
     second_block_title: 'Premium, but not snobbish',
     second_block_text: 'Starting with a very strong graphic concept, a parallel growth, the line becomes the protagonist of the visual identity. A line that grows, connects and marks a path both for the eye and the mind.',
+    presentation_url: '',
   })
   const [mediaBlocks, setMediaBlocks] = useState([])
 
@@ -55,6 +56,7 @@ export default function AdminProjectEdit() {
           first_horizontal_image_url: project.first_horizontal_image_url ?? '',
           second_block_title: project.second_block_title ?? 'Premium, but not snobbish',
           second_block_text: project.second_block_text ?? '',
+          presentation_url: project.presentation_url ?? '',
         })
         const media = project.project_media ?? []
         setMediaBlocks(
@@ -121,6 +123,7 @@ export default function AdminProjectEdit() {
             first_horizontal_image_url: form.first_horizontal_image_url,
             second_block_title: form.second_block_title,
             second_block_text: form.second_block_text,
+            presentation_url: form.presentation_url || null,
           })
           .select('id')
           .single()
@@ -138,6 +141,7 @@ export default function AdminProjectEdit() {
         }
         queryClient.invalidateQueries({ queryKey: ['projects'] })
         queryClient.invalidateQueries({ queryKey: ['project'] })
+        queryClient.removeQueries({ queryKey: ['project', uniqueSlug] })
         navigate(`/admin/projects/${uniqueSlug}`)
       } else {
         const { data: existing } = await supabase.from('projects').select('id').eq('slug', projectSlug).single()
@@ -157,6 +161,7 @@ export default function AdminProjectEdit() {
             first_horizontal_image_url: form.first_horizontal_image_url,
             second_block_title: form.second_block_title,
             second_block_text: form.second_block_text,
+            presentation_url: form.presentation_url || null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id)
@@ -175,6 +180,8 @@ export default function AdminProjectEdit() {
       }
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: ['project'] })
+      queryClient.removeQueries({ queryKey: ['project', form.slug] })
+      queryClient.removeQueries({ queryKey: ['project', projectSlug] })
     }
     try {
       await Promise.race([doSave(), timeout])
@@ -273,6 +280,13 @@ export default function AdminProjectEdit() {
             onChange={(e) => setForm((f) => ({ ...f, description_text: e.target.value }))}
           />
         </label>
+        <AdminMediaField
+          label="Presentation (ссылка или загрузка PDF/презентации — кнопка «Download project presentation»)"
+          value={form.presentation_url}
+          onChange={(url) => setForm((f) => ({ ...f, presentation_url: url }))}
+          accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+          folder="presentations"
+        />
         <label>
           CONCEPT
           <textarea
