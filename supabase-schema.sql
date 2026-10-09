@@ -67,11 +67,72 @@ CREATE TABLE IF NOT EXISTS public.project_media (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. Локализованные тексты и настройки переносов
+CREATE TABLE IF NOT EXISTS public.site_content_translations (
+  settings_id UUID NOT NULL REFERENCES public.site_settings(id) ON DELETE CASCADE,
+  locale TEXT NOT NULL CHECK (locale IN ('en', 'ru')),
+  hero_text TEXT NOT NULL DEFAULT '',
+  description_text TEXT NOT NULL DEFAULT '',
+  about_description_text TEXT NOT NULL DEFAULT '',
+  why_us_text TEXT NOT NULL DEFAULT '',
+  latest_works_label TEXT NOT NULL DEFAULT 'LATEST WORKS',
+  view_all_works_label TEXT NOT NULL DEFAULT 'View All Works',
+  why_us_title TEXT NOT NULL DEFAULT 'Why us',
+  contact_title TEXT NOT NULL DEFAULT 'CONTACT US',
+  contact_description_text TEXT NOT NULL DEFAULT '',
+  contact_form_text TEXT NOT NULL DEFAULT '',
+  wrap_settings JSONB NOT NULL DEFAULT '{}'::JSONB CHECK (jsonb_typeof(wrap_settings) = 'object'),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (settings_id, locale)
+);
+
+CREATE TABLE IF NOT EXISTS public.project_translations (
+  project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  locale TEXT NOT NULL CHECK (locale IN ('en', 'ru')),
+  name TEXT NOT NULL DEFAULT '',
+  subtitle TEXT NOT NULL DEFAULT '',
+  description_text TEXT NOT NULL DEFAULT '',
+  concept_text TEXT NOT NULL DEFAULT '',
+  requirements_text TEXT NOT NULL DEFAULT '',
+  output_text TEXT NOT NULL DEFAULT '',
+  second_block_title TEXT NOT NULL DEFAULT '',
+  second_block_text TEXT NOT NULL DEFAULT '',
+  wrap_settings JSONB NOT NULL DEFAULT '{}'::JSONB CHECK (jsonb_typeof(wrap_settings) = 'object'),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (project_id, locale)
+);
+
+INSERT INTO public.site_content_translations (
+  settings_id, locale, hero_text, description_text, about_description_text, why_us_text,
+  contact_description_text, contact_form_text, latest_works_label, view_all_works_label,
+  why_us_title, contact_title
+)
+SELECT id, 'en', COALESCE(hero_text, ''), COALESCE(description_text, ''),
+  COALESCE(description_text, ''), COALESCE(why_us_text, ''),
+  'Reach out to us and let''s collaborate on bringing your project to life.',
+  'Feel Like We Could Collaborate? Get in Touch!', 'LATEST WORKS', 'View All Works', 'Why us', 'CONTACT US'
+FROM public.site_settings
+ON CONFLICT (settings_id, locale) DO NOTHING;
+
+INSERT INTO public.project_translations (
+  project_id, locale, name, subtitle, description_text, concept_text,
+  requirements_text, output_text, second_block_title, second_block_text
+)
+SELECT id, 'en', COALESCE(name, ''), COALESCE(subtitle, ''), COALESCE(description_text, ''),
+  COALESCE(concept_text, ''), COALESCE(requirements_text, ''), COALESCE(output_text, ''),
+  COALESCE(second_block_title, ''), COALESCE(second_block_text, '')
+FROM public.projects
+ON CONFLICT (project_id, locale) DO NOTHING;
+
 -- Включаем RLS
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.marquee_logos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.project_media ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_content_translations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_translations ENABLE ROW LEVEL SECURITY;
 
 -- Удаляем старые политики (если скрипт уже запускали), затем создаём заново
 DROP POLICY IF EXISTS "site_settings_read" ON public.site_settings;
@@ -82,6 +143,10 @@ DROP POLICY IF EXISTS "projects_read" ON public.projects;
 DROP POLICY IF EXISTS "projects_write" ON public.projects;
 DROP POLICY IF EXISTS "project_media_read" ON public.project_media;
 DROP POLICY IF EXISTS "project_media_write" ON public.project_media;
+DROP POLICY IF EXISTS "site_content_translations_read" ON public.site_content_translations;
+DROP POLICY IF EXISTS "site_content_translations_write" ON public.site_content_translations;
+DROP POLICY IF EXISTS "project_translations_read" ON public.project_translations;
+DROP POLICY IF EXISTS "project_translations_write" ON public.project_translations;
 
 -- Политики: чтение — всем, запись — только авторизованным (WITH CHECK для INSERT)
 CREATE POLICY "site_settings_read" ON public.site_settings FOR SELECT USING (true);
@@ -95,6 +160,11 @@ CREATE POLICY "projects_write" ON public.projects FOR ALL USING (auth.role() = '
 
 CREATE POLICY "project_media_read" ON public.project_media FOR SELECT USING (true);
 CREATE POLICY "project_media_write" ON public.project_media FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "site_content_translations_read" ON public.site_content_translations FOR SELECT USING (true);
+CREATE POLICY "site_content_translations_write" ON public.site_content_translations FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "project_translations_read" ON public.project_translations FOR SELECT USING (true);
+CREATE POLICY "project_translations_write" ON public.project_translations FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Storage: политики для bucket "uploads" (загрузка фото из админки)
 -- Создайте bucket "uploads" в Storage → New bucket, затем выполните блок ниже.

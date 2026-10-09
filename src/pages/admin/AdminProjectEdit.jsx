@@ -1,65 +1,70 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
+import * as api from '../../lib/dataApi'
 import { queryClient } from '../../lib/queryClient'
 import { broadcastAdminSave } from '../../lib/adminSync'
 import AdminMediaField from '../../components/admin/AdminMediaField'
+import AdminLocalizedTextField from '../../components/admin/AdminLocalizedTextField'
+import { LOCALES, normalizeTranslations } from '../../lib/textLayout'
 import './Admin.css'
+
+const PROJECT_TEXT_FIELDS = [
+  'name',
+  'subtitle',
+  'description_text',
+  'concept_text',
+  'requirements_text',
+  'output_text',
+  'second_block_title',
+  'second_block_text',
+]
+
+const EMPTY_TRANSLATIONS = normalizeTranslations(
+  null,
+  {
+    second_block_title: 'Premium, but not snobbish',
+    second_block_text: 'Starting with a very strong graphic concept, a parallel growth, the line becomes the protagonist of the visual identity.',
+  },
+  PROJECT_TEXT_FIELDS
+)
 
 export default function AdminProjectEdit() {
   const { projectSlug } = useParams()
   const isNew = !projectSlug || projectSlug === 'new'
   const navigate = useNavigate()
+  const [activeLocale, setActiveLocale] = useState('en')
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
     slug: '',
     cover_image_url: '',
-    name: '',
-    subtitle: '',
     show_on_home: false,
-    description_text: '',
-    concept_text: '',
-    requirements_text: '',
-    output_text: '',
     first_horizontal_image_url: '',
-    second_block_title: 'Premium, but not snobbish',
-    second_block_text: 'Starting with a very strong graphic concept, a parallel growth, the line becomes the protagonist of the visual identity. A line that grows, connects and marks a path both for the eye and the mind.',
     presentation_url: '',
+    translations: EMPTY_TRANSLATIONS,
   })
   const [mediaBlocks, setMediaBlocks] = useState([])
 
   useEffect(() => {
     if (!isNew && projectSlug) load()
+    // load is intentionally scoped to this editor and keyed by the route params.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNew, projectSlug])
 
   async function load() {
     try {
-      const { data, error: e } = await supabase
-        .from('projects')
-        .select('*, project_media(id,type,image_url_1,image_url_2,sort_order)')
-        .eq('slug', projectSlug)
-        .single()
-      if (e) throw e
-      const project = data
+      const project = await api.getProjectBySlug(projectSlug)
       if (project) {
         setForm({
           slug: project.slug ?? '',
           cover_image_url: project.cover_image_url ?? '',
-          name: project.name ?? '',
-          subtitle: project.subtitle ?? '',
           show_on_home: project.show_on_home ?? false,
-          description_text: project.description_text ?? '',
-          concept_text: project.concept_text ?? '',
-          requirements_text: project.requirements_text ?? '',
-          output_text: project.output_text ?? '',
           first_horizontal_image_url: project.first_horizontal_image_url ?? '',
-          second_block_title: project.second_block_title ?? 'Premium, but not snobbish',
-          second_block_text: project.second_block_text ?? '',
           presentation_url: project.presentation_url ?? '',
+          translations: normalizeTranslations(project.translations, project, PROJECT_TEXT_FIELDS),
         })
-        const media = project.project_media ?? []
+        const media = project.media ?? []
         setMediaBlocks(
           [...media]
             .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
@@ -79,114 +84,35 @@ export default function AdminProjectEdit() {
   }
 
   async function save() {
-    if (!supabase) {
-      setError('Supabase не настроен')
-      return
-    }
     setSaving(true)
     setError('')
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Таймаут сохранения (20 сек). Проверьте сеть и повторите.')), 20000)
+      setTimeout(() => reject(new Error('Таймаут сохранения (20 сек).')), 20000)
     )
-    const doSave = async () => {
+    try {
+      const body = {
+        ...form,
+        media: mediaBlocks.map((b, i) => ({
+          id: b.id,
+          type: b.type,
+          image_url_1: b.image_url_1,
+          image_url_2: b.image_url_2,
+          sort_order: i,
+        })),
+      }
       if (isNew) {
-        // Генерируем уникальный slug
-        let baseSlug = form.slug || form.name?.toLowerCase().replace(/\s+/g, '-') || 'project'
-        baseSlug = baseSlug.replace(/[^a-z0-9-]/g, '') // Убираем спецсимволы
-        let uniqueSlug = baseSlug
-        let counter = 1
-        
-        // Проверяем уникальность slug
-        while (true) {
-          const { data: existing } = await supabase
-            .from('projects')
-            .select('id')
-            .eq('slug', uniqueSlug)
-            .single()
-          
-          if (!existing) break // Slug уникален
-          uniqueSlug = `${baseSlug}-${counter}`
-          counter++
-        }
-        
-        const { data: inserted, error: insertErr } = await supabase
-          .from('projects')
-          .insert({
-            slug: uniqueSlug,
-            name: form.name,
-            subtitle: form.subtitle,
-            cover_image_url: form.cover_image_url,
-            show_on_home: form.show_on_home,
-            description_text: form.description_text,
-            concept_text: form.concept_text,
-            requirements_text: form.requirements_text,
-            output_text: form.output_text,
-            first_horizontal_image_url: form.first_horizontal_image_url,
-            second_block_title: form.second_block_title,
-            second_block_text: form.second_block_text,
-            presentation_url: form.presentation_url || null,
-          })
-          .select('id')
-          .single()
-        if (insertErr) throw insertErr
-        const projectId = inserted?.id
-        for (let i = 0; i < mediaBlocks.length; i++) {
-          const b = mediaBlocks[i]
-          await supabase.from('project_media').insert({
-            project_id: projectId,
-            type: b.type,
-            image_url_1: b.image_url_1,
-            image_url_2: b.image_url_2,
-            sort_order: i,
-          })
-        }
+        const created = await Promise.race([api.createProject(body), timeout])
         queryClient.invalidateQueries({ queryKey: ['projects'] })
         queryClient.invalidateQueries({ queryKey: ['project'] })
-        queryClient.removeQueries({ queryKey: ['project', uniqueSlug] })
-        navigate(`/admin/projects/${uniqueSlug}`)
+        navigate(`/admin/projects/${created.slug}`)
       } else {
-        const { data: existing } = await supabase.from('projects').select('id').eq('slug', projectSlug).single()
-        if (!existing) throw new Error('Проект не найден')
-        const { error: updErr } = await supabase
-          .from('projects')
-          .update({
-            slug: form.slug,
-            name: form.name,
-            subtitle: form.subtitle,
-            cover_image_url: form.cover_image_url,
-            show_on_home: form.show_on_home,
-            description_text: form.description_text,
-            concept_text: form.concept_text,
-            requirements_text: form.requirements_text,
-            output_text: form.output_text,
-            first_horizontal_image_url: form.first_horizontal_image_url,
-            second_block_title: form.second_block_title,
-            second_block_text: form.second_block_text,
-            presentation_url: form.presentation_url || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id)
-        if (updErr) throw updErr
-        await supabase.from('project_media').delete().eq('project_id', existing.id)
-        for (let i = 0; i < mediaBlocks.length; i++) {
-          const b = mediaBlocks[i]
-          await supabase.from('project_media').insert({
-            project_id: existing.id,
-            type: b.type,
-            image_url_1: b.image_url_1,
-            image_url_2: b.image_url_2,
-            sort_order: i,
-          })
-        }
+        await Promise.race([api.updateProject(projectSlug, body), timeout])
+        queryClient.invalidateQueries({ queryKey: ['projects'] })
+        queryClient.invalidateQueries({ queryKey: ['project'] })
+        queryClient.removeQueries({ queryKey: ['project', form.slug] })
+        queryClient.removeQueries({ queryKey: ['project', projectSlug] })
+        broadcastAdminSave()
       }
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      queryClient.invalidateQueries({ queryKey: ['project'] })
-      queryClient.removeQueries({ queryKey: ['project', form.slug] })
-      queryClient.removeQueries({ queryKey: ['project', projectSlug] })
-      broadcastAdminSave()
-    }
-    try {
-      await Promise.race([doSave(), timeout])
     } catch (e) {
       setError(e.message || 'Ошибка сохранения')
     } finally {
@@ -204,6 +130,26 @@ export default function AdminProjectEdit() {
 
   function updateMediaBlock(index, field, value) {
     setMediaBlocks((prev) => prev.map((b, i) => (i === index ? { ...b, [field]: value } : b)))
+  }
+
+  function updateTranslation(field, value) {
+    setForm((current) => ({
+      ...current,
+      translations: {
+        ...current.translations,
+        [activeLocale]: { ...current.translations[activeLocale], [field]: value },
+      },
+    }))
+  }
+
+  function updateWrapSettings(value) {
+    setForm((current) => ({
+      ...current,
+      translations: {
+        ...current.translations,
+        [activeLocale]: { ...current.translations[activeLocale], wrap_settings: value },
+      },
+    }))
   }
 
   const formSkeleton = (
@@ -249,23 +195,6 @@ export default function AdminProjectEdit() {
           onChange={(url) => setForm((f) => ({ ...f, cover_image_url: url }))}
           accept="image/*"
         />
-        <label>
-          Название проекта
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-          />
-        </label>
-        <label>
-          Подзаголовок (категория)
-          <input
-            type="text"
-            value={form.subtitle}
-            onChange={(e) => setForm((f) => ({ ...f, subtitle: e.target.value }))}
-            placeholder="UX/UI Design • Design System"
-          />
-        </label>
         <div className="admin-checkbox-row">
           <input
             type="checkbox"
@@ -275,13 +204,52 @@ export default function AdminProjectEdit() {
           />
           <label htmlFor="show_on_home" style={{ marginBottom: 0 }}>Отображать на главной (в блоке Latest works)</label>
         </div>
-        <label>
-          Описание проекта
-          <textarea
-            value={form.description_text}
-            onChange={(e) => setForm((f) => ({ ...f, description_text: e.target.value }))}
-          />
-        </label>
+
+        <div className="admin-localized-editor">
+          <div className="admin-locale-tabs" role="tablist" aria-label="Язык проекта">
+            {LOCALES.map((locale) => (
+              <button
+                key={locale.code}
+                type="button"
+                role="tab"
+                aria-selected={activeLocale === locale.code}
+                className={activeLocale === locale.code ? 'active' : ''}
+                onClick={() => setActiveLocale(locale.code)}
+              >
+                {locale.label}
+                <span>{locale.code.toUpperCase()}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="admin-locale-note">
+            Авторские переносы включены по умолчанию. Enter фиксирует строку; пустая строка создаёт абзац.
+          </div>
+
+          {[
+            ['name', 'Название проекта', 2, 'admin-preview-project-title'],
+            ['subtitle', 'Подзаголовок / категория', 2, 'admin-preview-project-subtitle'],
+            ['description_text', 'Описание проекта', 4, 'admin-preview-project-body'],
+            ['concept_text', 'CONCEPT', 6, 'admin-preview-project-body'],
+            ['requirements_text', 'REQUIREMENTS', 6, 'admin-preview-project-body'],
+            ['output_text', 'OUTPUT', 6, 'admin-preview-project-body'],
+            ['second_block_title', 'Заголовок второго описания', 3, 'admin-preview-project-title'],
+            ['second_block_text', 'Текст второго описания', 6, 'admin-preview-project-body'],
+          ].map(([field, label, rows, previewClassName]) => (
+            <AdminLocalizedTextField
+              key={`${activeLocale}-${field}`}
+              field={field}
+              label={label}
+              rows={rows}
+              value={form.translations[activeLocale]?.[field] || ''}
+              wrapSettings={form.translations[activeLocale]?.wrap_settings || {}}
+              onValueChange={(value) => updateTranslation(field, value)}
+              onWrapSettingsChange={updateWrapSettings}
+              previewClassName={previewClassName}
+            />
+          ))}
+        </div>
+
         <AdminMediaField
           label="Presentation (ссылка или загрузка PDF/презентации — кнопка «Download project presentation»)"
           value={form.presentation_url}
@@ -289,49 +257,12 @@ export default function AdminProjectEdit() {
           accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
           folder="presentations"
         />
-        <label>
-          CONCEPT
-          <textarea
-            value={form.concept_text}
-            onChange={(e) => setForm((f) => ({ ...f, concept_text: e.target.value }))}
-          />
-        </label>
-        <label>
-          REQUIREMENTS
-          <textarea
-            value={form.requirements_text}
-            onChange={(e) => setForm((f) => ({ ...f, requirements_text: e.target.value }))}
-          />
-        </label>
-        <label>
-          OUTPUT
-          <textarea
-            value={form.output_text}
-            onChange={(e) => setForm((f) => ({ ...f, output_text: e.target.value }))}
-          />
-        </label>
         <AdminMediaField
           label="Первое горизонтальное фото (ссылка или загрузка)"
           value={form.first_horizontal_image_url}
           onChange={(url) => setForm((f) => ({ ...f, first_horizontal_image_url: url }))}
           accept="image/*"
         />
-        <label>
-          Заголовок второго описания
-          <input
-            type="text"
-            value={form.second_block_title}
-            onChange={(e) => setForm((f) => ({ ...f, second_block_title: e.target.value }))}
-          />
-        </label>
-        <label>
-          Текст второго описания
-          <textarea
-            value={form.second_block_text}
-            onChange={(e) => setForm((f) => ({ ...f, second_block_text: e.target.value }))}
-          />
-        </label>
-
         <h3 style={{ marginTop: '1.5rem' }}>Дополнительные медиа</h3>
         <p style={{ fontSize: '0.9rem', color: '#666' }}>
           Добавьте блоки: горизонтальное фото или два вертикальных.

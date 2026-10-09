@@ -6,7 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Портфолио</title>
-    <!-- Preconnect к Supabase — ускоряет первые запросы к API (инжектится при сборке) -->
+    <!-- Preconnect к Supabase (подставляется при сборке, если задан VITE_SUPABASE_URL) -->
   </head>
   <body>
     <div id="root"></div>
@@ -22,7 +22,7 @@
         }
       })();
     </script>
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
     <script type="module" src="/src/main.jsx?v=1"></script>
   </body>
 </html>
-

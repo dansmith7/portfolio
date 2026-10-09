@@ -1,9 +1,11 @@
 import '../App.css'
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
 import DelayedLink from '../components/DelayedLink'
 import { useQuery } from '@tanstack/react-query'
 import ContactForm from '../components/ContactForm'
+import ResponsiveText from '../components/ResponsiveText'
+import { AUTO_WRAP, collapseAuthoredLines, getTextLayout, resolveTranslation, textForViewport } from '../lib/textLayout'
+import useLocale from '../hooks/useLocale'
 import {
   fetchSiteSettingsQuery,
   fetchProjectsQuery,
@@ -19,11 +21,17 @@ const DEFAULTS = {
   contactTelegram: '@yourusername',
   contactImg: '/projects/2025-12-21%2001.48.57.jpg',
   whyUsImg: '/projects/2025-12-21%2001.48.57.jpg',
+  latestWorksLabel: 'LATEST WORKS',
+  viewAllWorksLabel: 'View All Works',
+  whyUsTitle: 'Why us',
+  contactTitle: 'CONTACT US',
 }
 
 function Home() {
+  const { locale } = useLocale()
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(true)
+  const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 768px)').matches)
   const heroLogoRef = useRef(null)
   const [logoFontSize, setLogoFontSize] = useState(360)
 
@@ -45,27 +53,35 @@ function Home() {
     staleTime: 1000 * 60 * 5,
   })
 
-  const heroText = (settings?.hero_text || DEFAULTS.heroText).trim() || DEFAULTS.heroText
-  
-  // Разделяем текст на две части для мобильной версии (две строки)
-  // Ищем место разделения: после закрывающей скобки перед "designs"
-  // Например: "an(y)  designs" -> "an(y) " и "designs"
-  const splitPattern = /\)\s+designs/i
-  const match = heroText.match(splitPattern)
-  let splitIndex = match ? match.index + match[0].indexOf('designs') : -1
-  // Fallback: если не нашлось, ищем "designs" в тексте
-  if (splitIndex <= 0 && heroText.toLowerCase().includes('designs')) {
-    splitIndex = heroText.toLowerCase().indexOf('designs')
-  }
-  const heroTextFirst = splitIndex > 0 ? heroText.slice(0, splitIndex).trimEnd() + ' ' : heroText
-  const heroTextSecond = splitIndex > 0 ? heroText.slice(splitIndex).trimStart() : ''
+  const localizedSettings = resolveTranslation(settings, locale)
+  const siteWrapSettings = localizedSettings.wrap_settings || {}
+  const heroLayout = getTextLayout(siteWrapSettings, 'hero_text')
+  const heroText = (localizedSettings.hero_text || DEFAULTS.heroText).trim() || DEFAULTS.heroText
+  const selectedHeroText = textForViewport(heroText, heroLayout, isMobileViewport)
+  const legacyMobileHero = isMobileViewport && !selectedHeroText.includes('\n')
+    ? selectedHeroText.replace(/\s+(designs)$/i, '\n$1')
+    : selectedHeroText
+  const heroRenderText = heroLayout.mode === AUTO_WRAP
+    ? collapseAuthoredLines(selectedHeroText)
+    : legacyMobileHero
+  const heroLines = heroRenderText.split('\n')
+  const displayedLines = displayedText.split('\n')
 
   useEffect(() => {
-    if (!isTyping) return
+    const media = window.matchMedia('(max-width: 768px)')
+    const update = () => setIsMobileViewport(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
+    setDisplayedText('')
+    setIsTyping(true)
     let currentIndex = 0
     const typeInterval = setInterval(() => {
-      if (currentIndex < heroText.length) {
-        setDisplayedText(heroText.slice(0, currentIndex + 1))
+      if (currentIndex < heroRenderText.length) {
+        setDisplayedText(heroRenderText.slice(0, currentIndex + 1))
         currentIndex++
       } else {
         setIsTyping(false)
@@ -73,7 +89,7 @@ function Home() {
       }
     }, 120)
     return () => clearInterval(typeInterval)
-  }, [isTyping, heroText])
+  }, [heroRenderText])
 
   // Автоматический подбор размера шрифта для точного соответствия ширине рабочей области
   useEffect(() => {
@@ -147,16 +163,8 @@ function Home() {
       tempElement.style.fontWeight = '400'
       tempElement.style.letterSpacing = isMobile ? '-0.03em' : '-0.04em'
       
-      let textToMeasure = heroText
-      
-      // В мобильной версии (≤768px) измеряем самую длинную строку (две строки)
-      if (isMobile && splitIndex > 0) {
-        const firstLine = heroTextFirst
-        const secondLine = heroTextSecond
-        textToMeasure = firstLine.length > secondLine.length ? firstLine : secondLine
-      } else {
-        textToMeasure = heroText
-      }
+      const measuredLines = heroRenderText.split('\n')
+      const textToMeasure = measuredLines.reduce((longest, line) => line.length > longest.length ? line : longest, '')
       
       tempElement.textContent = textToMeasure
       document.body.appendChild(tempElement)
@@ -217,15 +225,21 @@ function Home() {
       window.removeEventListener('resize', resizeHandler)
       window.removeEventListener('orientationchange', orientationHandler)
     }
-  }, [heroText, splitIndex, heroTextFirst, heroTextSecond])
+  }, [heroRenderText])
 
-  const description = settings?.description_text || DEFAULTS.description
+  const description = localizedSettings.description_text || DEFAULTS.description
   const showreelUrl = settings?.showreel_video_url || DEFAULTS.showreelUrl
-  const whyUsText = settings?.why_us_text || DEFAULTS.whyUsText
+  const whyUsText = localizedSettings.why_us_text || DEFAULTS.whyUsText
   const whyUsImg = settings?.why_us_photo_url || DEFAULTS.whyUsImg
   const contactEmail = settings?.contact_email || DEFAULTS.contactEmail
   const contactTelegram = (settings?.contact_telegram || DEFAULTS.contactTelegram).replace(/^@/, '')
   const contactImg = settings?.why_us_photo_url || DEFAULTS.contactImg
+  const contactDescription = localizedSettings.contact_description_text || "Reach out to us and let's collaborate on bringing your project to life."
+  const contactFormText = localizedSettings.contact_form_text || 'Feel Like We Could Collaborate? Get in Touch!'
+  const latestWorksLabel = localizedSettings.latest_works_label || DEFAULTS.latestWorksLabel
+  const viewAllWorksLabel = localizedSettings.view_all_works_label || DEFAULTS.viewAllWorksLabel
+  const whyUsTitle = localizedSettings.why_us_title || DEFAULTS.whyUsTitle
+  const contactTitle = localizedSettings.contact_title || DEFAULTS.contactTitle
 
   const telegramHref = contactTelegram.startsWith('http') ? contactTelegram : `https://t.me/${contactTelegram.replace(/^@/, '')}`
 
@@ -248,33 +262,19 @@ function Home() {
   const showProjectsSkeleton = projectsLoading && projectsList.length === 0
 
   return (
-    <div className="page-fade-in">
+    <div className="page-fade-in" lang={locale}>
       <section className="hero-screen">
         <div className="hero-logo" ref={heroLogoRef} style={{ fontSize: `${logoFontSize}px` }}>
-          <span className="hero-logo-line hero-logo-first">
-            {splitIndex > 0 && displayedText.length <= splitIndex
-              ? displayedText
-              : splitIndex > 0
-              ? heroTextFirst
-              : displayedText}
-          </span>
-          {splitIndex > 0 && (
-            <span className="hero-logo-line hero-logo-second">
-              {displayedText.length > splitIndex
-                ? displayedText.slice(splitIndex).trim()
-                : ''}
-              {isTyping && displayedText.length > splitIndex && (
-                <span className="typewriter-cursor">|</span>
-              )}
+          {heroLines.map((_, index) => (
+            <span className="hero-logo-line" key={`${index}-${heroLines[index]}`}>
+              {displayedLines[index] || ''}
+              {isTyping && index === displayedLines.length - 1 && <span className="typewriter-cursor">|</span>}
             </span>
-          )}
-          {isTyping && (splitIndex <= 0 || displayedText.length <= splitIndex) && (
-            <span className="typewriter-cursor">|</span>
-          )}
+          ))}
         </div>
       </section>
       <section className="description-screen">
-        <div className="hero-description">{description}</div>
+        <div className="hero-description"><ResponsiveText text={description} settings={siteWrapSettings} field="description_text" /></div>
       </section>
       <section className="video-screen">
         <div className="showreel">
@@ -290,7 +290,7 @@ function Home() {
           <div className="works-header">
             <div className="works-header-top">
               <div className="works-title-left">
-                <div className="works-label">LATEST WORKS</div>
+                <div className="works-label"><ResponsiveText text={latestWorksLabel} settings={siteWrapSettings} field="latest_works_label" /></div>
               </div>
             </div>
           </div>
@@ -309,7 +309,8 @@ function Home() {
                   </div>
                 </div>
               ))
-            ) : projectsList.length > 0 ? projectsList.map((p) => {
+            ) : projectsList.length > 0 ? projectsList.map((project) => {
+              const p = resolveTranslation(project, locale)
               const imgUrl = p.cover_image_url || '/projects/2025-12-21%2001.48.57.jpg'
               const imgKey = p.updated_at ? `${imgUrl}?v=${new Date(p.updated_at).getTime()}` : imgUrl
               return (
@@ -328,8 +329,8 @@ function Home() {
                     />
                   </div>
                   <div className="project-info">
-                    <span className="project-name">{p.name || '—'}</span>
-                    <span className="project-designer">{p.subtitle || 'Design by Designer Name'}</span>
+                    <span className="project-name"><ResponsiveText text={p.name || '—'} settings={p.wrap_settings} field="name" /></span>
+                    <span className="project-designer"><ResponsiveText text={p.subtitle || 'Design by Designer Name'} settings={p.wrap_settings} field="subtitle" /></span>
                   </div>
                 </DelayedLink>
               )
@@ -339,30 +340,28 @@ function Home() {
       </section>
       <section className="see-other-works-section">
         <DelayedLink to="/work" className="see-other-works-link">
-          <div className="see-other-works-button">View All Works</div>
+          <div className="see-other-works-button"><ResponsiveText text={viewAllWorksLabel} settings={siteWrapSettings} field="view_all_works_label" /></div>
         </DelayedLink>
       </section>
       <section className="why-us-section">
         <div className="why-us-container">
-          <h2 className="why-us-title">Why us</h2>
+          <h2 className="why-us-title"><ResponsiveText text={whyUsTitle} settings={siteWrapSettings} field="why_us_title" /></h2>
           <div className="why-us-content">
             <div className="why-us-image">
               <img src={whyUsImg} alt="Why us" className="why-us-img" onError={(e) => { e.target.style.display = 'none' }} />
             </div>
             <div className="why-us-text">
-              {whyUsText.split('\n\n').filter(Boolean).map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
+              <p><ResponsiveText text={whyUsText} settings={siteWrapSettings} field="why_us_text" /></p>
             </div>
           </div>
         </div>
       </section>
       <section id="contact-us" className="contact-us-section">
         <div className="contact-us-container">
-          <h2 className="contact-us-title">CONTACT US</h2>
+          <h2 className="contact-us-title"><ResponsiveText text={contactTitle} settings={siteWrapSettings} field="contact_title" /></h2>
           <div className="contact-us-content">
             <div className="contact-info-left">
-              <p className="contact-us-description">Reach out to us and let&apos;s collaborate on bringing your project to life.</p>
+              <p className="contact-us-description"><ResponsiveText text={contactDescription} settings={siteWrapSettings} field="contact_description_text" /></p>
               <div className="contact-info-item">
                 <div className="contact-info-label">EMAIL</div>
                 <a href={`mailto:${contactEmail}`} className="contact-info-value contact-button">{contactEmail}</a>
@@ -391,7 +390,7 @@ function Home() {
           </div>
         </div>
       </section>
-      <ContactForm />
+      <ContactForm text={contactFormText} wrapSettings={siteWrapSettings} />
     </div>
   )
 }

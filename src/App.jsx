@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, Outlet, useNavigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Outlet } from 'react-router-dom'
 import { Suspense, lazy, useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { usePrefetchOnHover } from './hooks/usePrefetchOnHover'
 import Lenis from 'lenis'
@@ -12,6 +12,8 @@ import Footer from './components/Footer'
 import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import AdminGuard from './pages/admin/AdminGuard'
 import AdminLayout from './pages/admin/AdminLayout'
+import LanguageSwitch from './components/LanguageSwitch'
+import useLocale from './hooks/useLocale'
 
 const Work = lazy(() => import('./pages/Work'))
 const About = lazy(() => import('./pages/About'))
@@ -337,7 +339,7 @@ function CustomCursor() {
 
 function AppContent() {
   const location = useLocation()
-  const navigate = useNavigate()
+  const { locale } = useLocale()
   const isAdmin = location.pathname.startsWith('/admin')
   usePrefetchOnHover(!isAdmin)
   const isWorkPage = location.pathname === '/work'
@@ -345,6 +347,9 @@ function AppContent() {
   const isProjectPage = location.pathname.startsWith('/work/') && location.pathname !== '/work'
   const isStaticHeader = isWorkPage || isAboutPage || isProjectPage
   const lenisRef = useRef(null)
+  const navigation = locale === 'ru'
+    ? { home: 'Главная', work: 'Проекты', about: 'О нас', contacts: 'Контакты' }
+    : { home: 'Home', work: 'Work', about: 'About', contacts: 'Contacts' }
 
 
   if (isAdmin) {
@@ -376,12 +381,15 @@ function AppContent() {
       <header className={`header ${isStaticHeader ? 'header-static' : ''}`}>
           <div className="header-content">
             <DelayedLink to="/" className="header-name header-name-visible">an(y)  designs</DelayedLink>
-            <nav className="nav">
-              <DelayedLink to="/">Home</DelayedLink>
-              <DelayedLink to="/work">Work</DelayedLink>
-              <DelayedLink to="/about">About</DelayedLink>
-              <Link to="/#contact-us">Contacts</Link>
-            </nav>
+            <div className="header-actions">
+              <nav className="nav">
+                <DelayedLink to="/">{navigation.home}</DelayedLink>
+                <DelayedLink to="/work">{navigation.work}</DelayedLink>
+                <DelayedLink to="/about">{navigation.about}</DelayedLink>
+                <Link to="/#contact-us">{navigation.contacts}</Link>
+              </nav>
+              <LanguageSwitch />
+            </div>
           </div>
         </header>
 
@@ -415,4 +423,3 @@ function App() {
 
 
 export default App
-

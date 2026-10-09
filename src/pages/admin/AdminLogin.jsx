@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import { useSupabaseAuth } from '../../lib/dataApi'
 import './Admin.css'
 
 export default function AdminLogin() {
@@ -12,13 +13,14 @@ export default function AdminLogin() {
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/admin'
+  const isSupabase = useSupabaseAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await signIn(email, password)
+      await signIn(isSupabase ? email : '', password)
       navigate(from, { replace: true })
     } catch (err) {
       setError(err.message || 'Ошибка входа')
@@ -31,17 +33,24 @@ export default function AdminLogin() {
     <div className="admin-login">
       <div className="admin-login-card">
         <h1>Вход в админку</h1>
+        {!isSupabase && (
+          <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+            Локально: пароль из <code>.env</code> (<code>ADMIN_PASSWORD</code>). Запустите <code>npm run server</code>.
+          </p>
+        )}
         <form onSubmit={handleSubmit}>
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </label>
+          {isSupabase && (
+            <label>
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </label>
+          )}
           <label>
             Пароль
             <input

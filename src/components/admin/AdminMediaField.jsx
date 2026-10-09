@@ -1,26 +1,23 @@
 import { useRef, useState } from 'react'
-import { supabase } from '../../lib/supabase'
-import { uploadFile } from '../../lib/uploadToSupabase'
+import { uploadFile, canUpload } from '../../lib/dataApi'
 
 /**
- * Поле: ссылка ИЛИ загрузка файла с компьютера.
- * accept — например "image/*", ".pdf,.ppt,.pptx"
- * folder — папка в bucket (media, presentations и т.д.)
+ * Поле: ссылка ИЛИ загрузка файла.
+ * Supabase: Storage bucket "uploads". Локально: server/data/uploads.
  */
 export default function AdminMediaField({ value, onChange, accept = 'image/*', label, folder = 'media' }) {
   const inputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
-  const canUpload = !!supabase
 
   async function handleFileChange(e) {
     const file = e.target.files?.[0]
-    if (!file || !supabase) return
+    if (!file) return
     e.target.value = ''
     setUploadError('')
     setUploading(true)
     try {
-      const url = await uploadFile(supabase, file, folder)
+      const url = await uploadFile(file, folder)
       onChange(url)
     } catch (err) {
       setUploadError(err.message || 'Ошибка загрузки')
@@ -28,6 +25,8 @@ export default function AdminMediaField({ value, onChange, accept = 'image/*', l
       setUploading(false)
     }
   }
+
+  const can = canUpload()
 
   return (
     <label className="admin-media-field">
@@ -51,9 +50,9 @@ export default function AdminMediaField({ value, onChange, accept = 'image/*', l
           <button
             type="button"
             className="admin-btn admin-media-field-btn"
-            disabled={uploading || !canUpload}
-            onClick={() => canUpload && inputRef.current?.click()}
-            title={!canUpload ? 'Настройте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env' : undefined}
+            disabled={uploading || !can}
+            onClick={() => can && inputRef.current?.click()}
+            title={!can ? 'Запустите npm run server' : undefined}
           >
             {uploading ? 'Загрузка…' : 'Загрузить с компьютера'}
           </button>

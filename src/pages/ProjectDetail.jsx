@@ -1,15 +1,19 @@
 import '../App.css'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import DelayedLink from '../components/DelayedLink'
 import { useQuery } from '@tanstack/react-query'
 import { useLayoutEffect } from 'react'
 import { usePreloadReady } from '../contexts/PreloadContext'
 import { fetchProjectBySlugQuery } from '../lib/siteDataQueries'
+import ResponsiveText from '../components/ResponsiveText'
+import useLocale from '../hooks/useLocale'
+import { resolveTranslation } from '../lib/textLayout'
 
 const FALLBACK_IMG = '/projects/2025-12-21%2001.48.57.jpg'
 
 function ProjectDetail() {
   const { projectId } = useParams()
+  const { locale } = useLocale()
 
   useLayoutEffect(() => {
     if (window.location.hash) {
@@ -71,22 +75,26 @@ function ProjectDetail() {
     )
   }
 
+  const localizedProject = resolveTranslation(project, locale)
   const img = (url) => {
     const baseUrl = url || FALLBACK_IMG
     if (!url) return baseUrl
     return project.updated_at ? `${baseUrl}?v=${new Date(project.updated_at).getTime()}` : baseUrl
   }
   const media = project.media || []
+  const wrapSettings = localizedProject.wrap_settings || {}
 
   return (
-    <div className="project-detail-page page-fade-in">
+    <div className="project-detail-page page-fade-in" lang={locale}>
       <section className="project-detail-main">
         <div className="project-detail-container">
           <div className="project-detail-content">
             <div className="project-detail-left">
-              <h1 className="project-detail-title">{project.name}</h1>
+              <h1 className="project-detail-title">
+                <ResponsiveText text={localizedProject.name} settings={wrapSettings} field="name" />
+              </h1>
               <div className="project-detail-description">
-                <p>{project.description_text}</p>
+                <p><ResponsiveText text={localizedProject.description_text} settings={wrapSettings} field="description_text" /></p>
               </div>
               {project.presentation_url && (
                 <a
@@ -109,7 +117,7 @@ function ProjectDetail() {
                   <h3 className="project-detail-section-label">CONCEPT</h3>
                 </div>
                 <div className="project-detail-section-content">
-                  <p>{project.concept_text}</p>
+                  <p><ResponsiveText text={localizedProject.concept_text} settings={wrapSettings} field="concept_text" /></p>
                 </div>
               </div>
               <div className="project-detail-section">
@@ -118,7 +126,7 @@ function ProjectDetail() {
                   <h3 className="project-detail-section-label">REQUIREMENTS</h3>
                 </div>
                 <div className="project-detail-section-content">
-                  <p>{project.requirements_text}</p>
+                  <p><ResponsiveText text={localizedProject.requirements_text} settings={wrapSettings} field="requirements_text" /></p>
                 </div>
               </div>
               <div className="project-detail-section">
@@ -127,7 +135,7 @@ function ProjectDetail() {
                   <h3 className="project-detail-section-label">OUTPUT</h3>
                 </div>
                 <div className="project-detail-section-content">
-                  <p>{project.output_text}</p>
+                  <p><ResponsiveText text={localizedProject.output_text} settings={wrapSettings} field="output_text" /></p>
                 </div>
               </div>
             </div>
@@ -135,7 +143,7 @@ function ProjectDetail() {
               <div className="project-detail-image">
                 <img
                   src={img(project.cover_image_url)}
-                  alt={project.name}
+                  alt={localizedProject.name}
                   className="project-detail-img"
                   onError={(e) => { e.target.src = FALLBACK_IMG }}
                   loading="eager"
@@ -168,8 +176,12 @@ function ProjectDetail() {
           <div className="project-detail-spacer" />
           <section className="project-detail-text-block">
             <div className="project-detail-text-container">
-              <h2 className="project-detail-text-title">{project.second_block_title || '—'}</h2>
-              <p className="project-detail-text-content">{project.second_block_text || ''}</p>
+              <h2 className="project-detail-text-title">
+                <ResponsiveText text={localizedProject.second_block_title || '—'} settings={wrapSettings} field="second_block_title" />
+              </h2>
+              <p className="project-detail-text-content">
+                <ResponsiveText text={localizedProject.second_block_text || ''} settings={wrapSettings} field="second_block_text" />
+              </p>
             </div>
           </section>
         </>

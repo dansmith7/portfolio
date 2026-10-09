@@ -1,5 +1,7 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from 'react'
 import '../App.css'
+import ResponsiveText from './ResponsiveText'
 
 // Массив цветов для плашек
 const PLAQUE_COLORS = [
@@ -45,9 +47,8 @@ const PLAQUE_TEXTS = [
   ":)"
 ]
 
-function ContactForm() {
+function ContactForm({ text = 'Feel Like We Could Collaborate? Get in Touch!', wrapSettings = {} }) {
 
-  const [isInside, setIsInside] = useState(false)
   const [plaques, setPlaques] = useState([]) // Массив зафиксированных плашек
   const containerRef = useRef(null)
   const lastPlaquePosRef = useRef(null) // Позиция последней созданной плашки
@@ -105,7 +106,6 @@ function ContactForm() {
       if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
         if (!isMouseInsideRef.current) {
           isMouseInsideRef.current = true
-          setIsInside(true)
           // Инициализируем первую позицию и создаем первую плашку сразу
           lastPlaquePosRef.current = { x, y }
           totalDistanceRef.current = 0
@@ -184,7 +184,6 @@ function ContactForm() {
       } else {
         if (isMouseInsideRef.current) {
           isMouseInsideRef.current = false
-          setIsInside(false)
           // Сбрасываем при выходе, но плашки остаются видимыми
         }
       }
@@ -192,7 +191,6 @@ function ContactForm() {
 
     const handleMouseLeave = () => {
       isMouseInsideRef.current = false
-      setIsInside(false)
       // Не удаляем плашки при выходе - они остаются на экране
     }
 
@@ -249,7 +247,7 @@ function ContactForm() {
       style={{ textDecoration: 'none', display: 'block' }}
     >
       <div className="contact-form-container">
-        <p className="contact-form-text">Feel Like We Could Collaborate? Get in Touch!</p>
+        <p className="contact-form-text"><ResponsiveText text={text} settings={wrapSettings} field="contact_form_text" /></p>
       </div>
       
       {/* Хвост из плашек */}
@@ -278,4 +276,3 @@ function ContactForm() {
 }
 
 export default ContactForm
-

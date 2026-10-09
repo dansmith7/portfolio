@@ -2,12 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DelayedLink from './DelayedLink'
 import '../App.css'
+import useLocale from '../hooks/useLocale'
 
 const FOOTER_TEXT = 'an(y)  designs'
 
 export default function Footer() {
+  const { locale } = useLocale()
   const footerLogoRef = useRef(null)
   const [logoFontSize, setLogoFontSize] = useState(360)
+  const navigation = locale === 'ru'
+    ? { home: 'Главная', work: 'Проекты', about: 'О нас', contacts: 'Контакты' }
+    : { home: 'Home', work: 'Work', about: 'About', contacts: 'Contacts' }
 
   // Автоматический подбор размера шрифта для точного соответствия ширине рабочей области
   useEffect(() => {
@@ -153,14 +158,14 @@ export default function Footer() {
       <div className="footer-content">
         <div className="footer-left">
           <nav className="footer-nav">
-            <DelayedLink to="/">Home</DelayedLink>
-            <DelayedLink to="/work">Work</DelayedLink>
+            <DelayedLink to="/">{navigation.home}</DelayedLink>
+            <DelayedLink to="/work">{navigation.work}</DelayedLink>
           </nav>
         </div>
         <div className="footer-center">
           <nav className="footer-nav">
-            <DelayedLink to="/about">About</DelayedLink>
-            <Link to="/#contact-us">Contacts</Link>
+            <DelayedLink to="/about">{navigation.about}</DelayedLink>
+            <Link to="/#contact-us">{navigation.contacts}</Link>
           </nav>
         </div>
         <div className="footer-right">

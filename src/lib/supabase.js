@@ -7,3 +7,7 @@ export const supabase =
   supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null
+
+export function useSupabase() {
+  return !!supabase
+}

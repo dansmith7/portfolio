@@ -368,6 +368,13 @@
   gap: 40px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  min-width: 0;
+}
+
 .nav a {
   text-decoration: none;
   color: #000000;
@@ -380,6 +387,56 @@
 
 .nav a:hover {
   opacity: 0.6;
+}
+
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 5px;
+  color: #a0a0a0;
+  font: 400 12px/1 'Jost', Arial, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+}
+
+.language-switch button {
+  position: relative;
+  padding: 4px 1px 6px;
+  border: 0;
+  background: transparent;
+  color: #9a9a9a;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.language-switch button::after {
+  content: '';
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  left: 1px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.language-switch button:hover,
+.language-switch button.active {
+  color: #000;
+}
+
+.language-switch button.active::after {
+  transform: scaleX(1);
+}
+
+.language-switch button:focus-visible {
+  outline: 1px solid #000;
+  outline-offset: 3px;
 }
 
 /* Main */
@@ -426,7 +483,9 @@
 }
 
 .hero-logo-line {
-  display: inline;
+  display: block;
+  width: 100%;
+  white-space: nowrap;
 }
 
 .hero-logo-first,
@@ -2006,11 +2065,19 @@
   }
 
   .nav {
-    gap: 25px;
+    gap: 16px;
+  }
+
+  .header-actions {
+    gap: 18px;
   }
 
   .nav a {
     font-size: 14px;
+  }
+
+  .language-switch {
+    font-size: 11px;
   }
 
   .hero-screen {
@@ -2238,6 +2305,40 @@
   
   .logos-marquee-track {
     gap: 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .header-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 10px;
+    padding: 12px 20px 10px;
+  }
+
+  .header-actions {
+    display: contents;
+  }
+
+  .language-switch {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .nav a {
+    font-size: 13px;
+  }
+
+  .hero-screen {
+    padding-top: 92px;
   }
 }
 
@@ -2507,6 +2608,31 @@
   width: 100%;
   background-color: #ffffff;
   position: relative;
+}
+
+.responsive-copy {
+  display: inline;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.responsive-copy-mobile {
+  display: none;
+}
+
+.responsive-copy-auto {
+  white-space: normal;
+}
+
+@media (max-width: 768px) {
+  .responsive-copy-desktop {
+    display: none;
+  }
+
+  .responsive-copy-mobile {
+    display: inline;
+  }
 }
 
 .project-detail-main {
@@ -3601,4 +3727,3 @@
   color: #ffffff !important;
   border: 1px solid #000000 !important;
 }
-

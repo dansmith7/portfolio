@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
+import * as api from '../../lib/dataApi'
 import './Admin.css'
 
 export default function AdminProjects() {
@@ -14,36 +14,17 @@ export default function AdminProjects() {
   }, [])
 
   async function load() {
-    if (!supabase) {
-      setError('Supabase не настроен. Добавьте переменные в .env')
-      setLoading(false)
-      return
-    }
     setLoading(true)
     setError('')
     try {
       const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Таймаут: запрос к БД не ответил за 15 сек. Проверьте сеть.')), 15000)
+        setTimeout(() => reject(new Error('Таймаут: запрос не ответил за 15 сек.')), 15000)
       )
-      const query = supabase
-        .from('projects')
-        .select('id,slug,name,subtitle,show_on_home,created_at')
-        .order('created_at', { ascending: false })
-      const { data, error: e } = await Promise.race([query, timeout])
-      if (e) throw e
-      setProjects(data ?? [])
+      const data = await Promise.race([api.getProjects(), timeout])
+      setProjects(Array.isArray(data) ? data : [])
     } catch (e) {
       const msg = e.message || 'Ошибка загрузки'
-      if (msg.startsWith('Таймаут:')) {
-        setError(msg + ' Нажмите «Повторить» или «Добавить проект».')
-      } else if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist') || msg.includes('not find')) {
-        setError(
-          'Таблица projects не найдена. Выполните supabase-schema.sql в Supabase (SQL Editor). ' +
-          '(Точная ошибка: ' + msg + ')'
-        )
-      } else {
-        setError(msg)
-      }
+      setError(msg + (msg.includes('Таймаут') ? ' Локально: npm run server. На хостинге: VITE_SUPABASE_* в Vercel.' : ''))
     } finally {
       setLoading(false)
     }
@@ -82,7 +63,7 @@ export default function AdminProjects() {
             ))
           : error ? (
             <li style={{ color: '#666', listStyle: 'none' }}>
-              Исправьте ошибку выше и обновите (F5) или нажмите «Повторить». Кнопка «Добавить проект» всегда доступна.
+              Локально: <code>npm run server</code>. На хостинге: задайте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в Vercel.
             </li>
           ) : projects.length === 0 ? (
             <li>Проектов пока нет. <button type="button" className="admin-link-btn" onClick={() => navigate('/admin/projects/new')}>Создать первый</button></li>

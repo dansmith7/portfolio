@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from './lib/queryClient'
 import { subscribeToAdminSync } from './lib/adminSync'
 import App from './App.jsx'
+import LocaleProvider from './contexts/LocaleProvider.jsx'
 import './index.css'
 
 // Синхронизация с админкой: при сохранении в другой вкладке — обновляем данные
@@ -18,7 +19,9 @@ if ('scrollRestoration' in history) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <LocaleProvider>
+        <App />
+      </LocaleProvider>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   </React.StrictMode>,

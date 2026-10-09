@@ -4,8 +4,6 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const supabaseUrl = (env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
-
   return {
     optimizeDeps: {
       include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
@@ -16,14 +14,16 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       {
-        name: 'html-preconnect',
+        name: 'supabase-preconnect',
         transformIndexHtml(html) {
-          if (!supabaseUrl) return html
-          const preconnect = `<link rel="preconnect" href="${supabaseUrl}" crossorigin />`
-          return html.replace(
-            '<!-- Preconnect к Supabase — ускоряет первые запросы к API (инжектится при сборке) -->',
-            preconnect
-          )
+          const url = env.VITE_SUPABASE_URL
+          if (url && typeof url === 'string' && url.includes('supabase.co')) {
+            try {
+              const origin = new URL(url).origin
+              return html.replace('</head>', `\n    <link rel="preconnect" href="${origin}" crossorigin>\n  </head>`)
+            } catch {}
+          }
+          return html
         },
       },
       {
@@ -41,6 +41,10 @@ export default defineConfig(({ mode }) => {
       port: 5005,
       strictPort: true,
       open: true,
+      proxy: {
+        '/api': { target: 'http://localhost:5006', changeOrigin: true },
+        '/uploads': { target: 'http://localhost:5006', changeOrigin: true },
+      },
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
         Pragma: 'no-cache',
@@ -55,7 +59,7 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-libs': ['lenis', '@supabase/supabase-js'],
+            'vendor-libs': ['lenis'],
           },
         },
       },

@@ -2,6 +2,9 @@ import '../App.css'
 import { useQuery } from '@tanstack/react-query'
 import DelayedLink from '../components/DelayedLink'
 import { fetchSiteSettingsQuery } from '../lib/siteDataQueries'
+import ResponsiveText from '../components/ResponsiveText'
+import useLocale from '../hooks/useLocale'
+import { resolveTranslation } from '../lib/textLayout'
 
 const DEFAULTS = {
   description:
@@ -19,17 +22,19 @@ const SERVICES = [
 ]
 
 function About() {
+  const { locale } = useLocale()
   const { data: settings } = useQuery({
     queryKey: ['site_settings'],
     queryFn: fetchSiteSettingsQuery,
     staleTime: 1000 * 60 * 5,
   })
 
-  const description =
-    settings?.description_text || DEFAULTS.description
+  const localizedSettings = resolveTranslation(settings, locale)
+  const description = localizedSettings.about_description_text || localizedSettings.description_text || DEFAULTS.description
+  const wrapSettings = localizedSettings.wrap_settings || {}
 
   return (
-    <div className="about-page page-fade-in">
+    <div className="about-page page-fade-in" lang={locale}>
       <section className="about-hero">
         <div className="about-container">
           <h1 className="about-title">About</h1>
@@ -39,7 +44,7 @@ function About() {
       <section className="about-content">
         <div className="about-container">
           <div className="about-intro">
-            <p className="about-intro-text">{description}</p>
+            <p className="about-intro-text"><ResponsiveText text={description} settings={wrapSettings} field="about_description_text" /></p>
           </div>
 
           <div className="about-section">

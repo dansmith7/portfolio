@@ -1,24 +1,36 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import * as api from '../../lib/dataApi'
 import { queryClient } from '../../lib/queryClient'
 import { broadcastAdminSave } from '../../lib/adminSync'
 import AdminMediaField from '../../components/admin/AdminMediaField'
+import AdminLocalizedTextField from '../../components/admin/AdminLocalizedTextField'
+import { LOCALES, normalizeTranslations } from '../../lib/textLayout'
 import './Admin.css'
 
-const SETTINGS_ID = '00000000-0000-0000-0000-000000000001'
+const SITE_TEXT_FIELDS = [
+  'hero_text',
+  'description_text',
+  'about_description_text',
+  'why_us_text',
+  'latest_works_label',
+  'view_all_works_label',
+  'why_us_title',
+  'contact_title',
+  'contact_description_text',
+  'contact_form_text',
+]
 
 export default function AdminSettings() {
+  const [activeLocale, setActiveLocale] = useState('en')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
-    hero_text: 'an(y)  designs',
-    description_text: '',
     why_us_photo_url: '',
-    why_us_text: '',
     showreel_video_url: '',
     contact_email: '',
     contact_telegram: '',
+    translations: normalizeTranslations(null, { hero_text: 'an(y) designs' }, SITE_TEXT_FIELDS),
   })
 
   useEffect(() => {
@@ -26,64 +38,56 @@ export default function AdminSettings() {
   }, [])
 
   async function load() {
-    if (!supabase) {
-      setError('Supabase не настроен. Добавьте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env')
-      setLoading(false)
-      return
-    }
     try {
-      const { data, error: e } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('id', SETTINGS_ID)
-        .single()
-      if (e) throw e
-      if (data) setForm({
-        hero_text: data.hero_text ?? '',
-        description_text: data.description_text ?? '',
-        why_us_photo_url: data.why_us_photo_url ?? '',
-        why_us_text: data.why_us_text ?? '',
-        showreel_video_url: data.showreel_video_url ?? '',
-        contact_email: data.contact_email ?? '',
-        contact_telegram: data.contact_telegram ?? '',
-      })
-    } catch (e) {
-      const msg = e.message || 'Ошибка загрузки'
-      if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist')) {
-        setError('Таблица site_settings не найдена. Выполните скрипт supabase-schema.sql в Supabase: SQL Editor → New query → вставьте содержимое файла supabase-schema.sql из корня проекта → Run.')
-      } else {
-        setError(msg)
+      const data = await api.getSiteSettings()
+      if (data) {
+        setForm({
+          why_us_photo_url: data.why_us_photo_url ?? '',
+          showreel_video_url: data.showreel_video_url ?? '',
+          contact_email: data.contact_email ?? '',
+          contact_telegram: data.contact_telegram ?? '',
+          translations: normalizeTranslations(data.translations, data, SITE_TEXT_FIELDS),
+        })
       }
+    } catch (e) {
+      setError(e.message || 'Ошибка загрузки. Локально: npm run server. На хостинге: задайте VITE_SUPABASE_* в Vercel.')
     } finally {
       setLoading(false)
     }
   }
 
   async function save() {
-    if (!supabase) return
     setSaving(true)
     setError('')
     try {
-      const { error: e } = await supabase
-        .from('site_settings')
-        .upsert({
-          id: SETTINGS_ID,
-          ...form,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'id' })
-      if (e) throw e
+      await api.updateSiteSettings({ ...form, updated_at: new Date().toISOString() })
       queryClient.invalidateQueries({ queryKey: ['site_settings'] })
       broadcastAdminSave()
     } catch (e) {
-      const msg = e.message || 'Ошибка сохранения'
-      if (msg.includes('schema cache') || msg.includes('relation') || msg.includes('does not exist')) {
-        setError('Таблица site_settings не найдена. Выполните скрипт supabase-schema.sql в Supabase (SQL Editor).')
-      } else {
-        setError(msg)
-      }
+      setError(e.message || 'Ошибка сохранения')
     } finally {
       setSaving(false)
     }
+  }
+
+  function updateTranslation(field, value) {
+    setForm((current) => ({
+      ...current,
+      translations: {
+        ...current.translations,
+        [activeLocale]: { ...current.translations[activeLocale], [field]: value },
+      },
+    }))
+  }
+
+  function updateWrapSettings(value) {
+    setForm((current) => ({
+      ...current,
+      translations: {
+        ...current.translations,
+        [activeLocale]: { ...current.translations[activeLocale], wrap_settings: value },
+      },
+    }))
   }
 
   const formSkeleton = (
@@ -106,60 +110,88 @@ export default function AdminSettings() {
         </button>
       </div>
       {error && <div className="admin-error">{error}</div>}
-      {loading ? formSkeleton : (
-      <div className="admin-form">
-        <label>
-          Hero-текст
-          <input
-            type="text"
-            value={form.hero_text}
-            onChange={(e) => setForm((f) => ({ ...f, hero_text: e.target.value }))}
+      {loading ? (
+        formSkeleton
+      ) : (
+        <div className="admin-form">
+          <div className="admin-localized-editor">
+            <div className="admin-locale-tabs" role="tablist" aria-label="Язык сайта">
+              {LOCALES.map((locale) => (
+                <button
+                  key={locale.code}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeLocale === locale.code}
+                  className={activeLocale === locale.code ? 'active' : ''}
+                  onClick={() => setActiveLocale(locale.code)}
+                >
+                  {locale.label}
+                  <span>{locale.code.toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="admin-locale-note">
+              Авторские переносы включены по умолчанию. Для каждого текста можно переключиться на автоматический режим.
+            </div>
+
+            {[
+              ['hero_text', 'Hero-текст', 3, 'admin-preview-hero'],
+              ['description_text', 'Описание на главной', 5, 'admin-preview-site-body'],
+              ['about_description_text', 'Вводный текст About', 5, 'admin-preview-site-body'],
+              ['latest_works_label', 'Заголовок Latest works', 2, 'admin-preview-site-body'],
+              ['view_all_works_label', 'Кнопка View all works', 2, 'admin-preview-site-body'],
+              ['why_us_title', 'Заголовок Why us', 2, 'admin-preview-site-body'],
+              ['why_us_text', 'Текст блока Why us', 7, 'admin-preview-site-body'],
+              ['contact_title', 'Заголовок Contact us', 2, 'admin-preview-site-body'],
+              ['contact_description_text', 'Описание блока Contact us', 4, 'admin-preview-site-body'],
+              ['contact_form_text', 'Финальный призыв к действию', 3, 'admin-preview-site-body'],
+            ].map(([field, label, rows, previewClassName]) => (
+              <AdminLocalizedTextField
+                key={`${activeLocale}-${field}`}
+                field={field}
+                label={label}
+                rows={rows}
+                value={form.translations[activeLocale]?.[field] || ''}
+                wrapSettings={form.translations[activeLocale]?.wrap_settings || {}}
+                onValueChange={(value) => updateTranslation(field, value)}
+                onWrapSettingsChange={updateWrapSettings}
+                previewClassName={previewClassName}
+              />
+            ))}
+          </div>
+
+          <AdminMediaField
+            label="Фото блока Why us"
+            value={form.why_us_photo_url}
+            onChange={(url) => setForm((f) => ({ ...f, why_us_photo_url: url }))}
+            accept="image/*"
           />
-        </label>
-        <label>
-          Описание под hero
-          <textarea
-            value={form.description_text}
-            onChange={(e) => setForm((f) => ({ ...f, description_text: e.target.value }))}
-          />
-        </label>
-        <AdminMediaField
-          label="Фото «Why us» (ссылка или загрузка с компьютера)"
-          value={form.why_us_photo_url}
-          onChange={(url) => setForm((f) => ({ ...f, why_us_photo_url: url }))}
-          accept="image/*"
-        />
-        <label>
-          Текст «Why us»
-          <textarea
-            value={form.why_us_text}
-            onChange={(e) => setForm((f) => ({ ...f, why_us_text: e.target.value }))}
-          />
-        </label>
-        <AdminMediaField
-          label="Видео showreel (ссылка или загрузка с компьютера)"
-          value={form.showreel_video_url}
-          onChange={(url) => setForm((f) => ({ ...f, showreel_video_url: url }))}
-          accept="video/*"
-        />
-        <label>
-          Email контактов
-          <input
-            type="email"
-            value={form.contact_email}
-            onChange={(e) => setForm((f) => ({ ...f, contact_email: e.target.value }))}
-          />
-        </label>
-        <label>
-          Telegram контактов
-          <input
-            type="text"
-            value={form.contact_telegram}
-            onChange={(e) => setForm((f) => ({ ...f, contact_telegram: e.target.value }))}
-            placeholder="@username"
-          />
-        </label>
-      </div>
+          <label>
+            Ссылка на showreel (видео)
+            <input
+              type="url"
+              value={form.showreel_video_url}
+              onChange={(e) => setForm((f) => ({ ...f, showreel_video_url: e.target.value }))}
+            />
+          </label>
+          <label>
+            Email для контактов
+            <input
+              type="text"
+              value={form.contact_email}
+              onChange={(e) => setForm((f) => ({ ...f, contact_email: e.target.value }))}
+            />
+          </label>
+          <label>
+            Telegram
+            <input
+              type="text"
+              value={form.contact_telegram}
+              onChange={(e) => setForm((f) => ({ ...f, contact_telegram: e.target.value }))}
+            />
+          </label>
+        </div>
       )}
     </>
   )

@@ -600,6 +600,219 @@
   background: #475569;
 }
 
+/* Localized copy editor */
+.admin-localized-editor {
+  margin: 2rem 0 2.5rem;
+  border-top: 1px solid #d9dee5;
+}
+
+.admin-locale-tabs {
+  position: sticky;
+  top: -2rem;
+  z-index: 5;
+  display: flex;
+  gap: 0;
+  padding-top: 1rem;
+  background: #fff;
+  border-bottom: 1px solid #d9dee5;
+}
+
+.admin-locale-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1.25rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #7a8491;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-locale-tabs button span {
+  padding: 0.16rem 0.38rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.admin-locale-tabs button.active {
+  color: #07243e;
+  border-bottom-color: #07243e;
+}
+
+.admin-locale-note {
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid #07243e;
+  background: #f2f5f7;
+  color: #465363;
+  font-size: 0.83rem;
+}
+
+.admin-copy-field {
+  padding: 2rem 0;
+  border-bottom: 1px solid #e5e9ee;
+}
+
+.admin-copy-field-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.admin-copy-field-heading h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.admin-copy-field-heading p {
+  margin: 0.3rem 0 0;
+  color: #87919d;
+  font-size: 0.76rem;
+}
+
+.admin-wrap-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid #d4dae1;
+  border-radius: 999px;
+  background: #f4f6f8;
+}
+
+.admin-wrap-toggle button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  color: #6b7581;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.admin-wrap-toggle button.active {
+  background: #07243e;
+  color: #fff;
+}
+
+.admin-copy-field > textarea,
+.admin-copy-field > input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #cfd6de;
+  border-radius: 3px;
+  background: #fff;
+  color: #0f172a;
+  font: 400 0.95rem/1.55 'Jost', sans-serif;
+  resize: vertical;
+}
+
+.admin-copy-field > textarea:focus,
+.admin-copy-field > input:focus,
+.admin-mobile-copy textarea:focus {
+  outline: 2px solid rgba(7, 36, 62, 0.16);
+  border-color: #07243e;
+}
+
+.admin-mobile-copy {
+  display: grid !important;
+  gap: 0.35rem !important;
+  margin: 1rem 0 0 !important;
+  padding: 1rem;
+  border: 1px dashed #cbd2da;
+  background: #fbfcfd;
+}
+
+.admin-mobile-copy small {
+  color: #8a949f;
+  font-weight: 400;
+}
+
+.admin-copy-preview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 540px) minmax(220px, 320px);
+  align-items: start;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-copy-preview {
+  min-height: 116px;
+  padding: 1rem;
+  border: 1px solid #e0e5ea;
+  background:
+    linear-gradient(#f2f4f6 1px, transparent 1px),
+    linear-gradient(90deg, #f2f4f6 1px, transparent 1px),
+    #fff;
+  background-size: 16px 16px;
+  overflow-wrap: anywhere;
+}
+
+.admin-copy-preview-label {
+  display: block;
+  margin-bottom: 1.1rem;
+  color: #8c96a1;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-copy-preview > div {
+  white-space: pre-line;
+}
+
+.admin-preview-project-title {
+  font-size: 42px;
+  line-height: 46px;
+  letter-spacing: -0.84px;
+}
+
+.admin-preview-project-subtitle,
+.admin-preview-project-body,
+.admin-preview-site-body {
+  font-size: 15px;
+  line-height: 21px;
+  letter-spacing: -0.15px;
+}
+
+.admin-preview-hero {
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+@media (max-width: 900px) {
+  .admin-copy-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-copy-preview.mobile {
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-copy-field-heading {
+    flex-direction: column;
+  }
+
+  .admin-locale-tabs {
+    top: -1rem;
+  }
+
+  .admin-locale-tabs button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 /* Поле «ссылка или загрузка» */
 .admin-media-field {
   display: block;

@@ -1,6 +1,5 @@
-import { supabase } from './supabase'
+import * as api from './dataApi'
 
-const SETTINGS_ID = '00000000-0000-0000-0000-000000000001'
 const TIMEOUT_MS = 5000
 
 const withTimeout = (promise, ms = TIMEOUT_MS) =>
@@ -12,63 +11,47 @@ const withTimeout = (promise, ms = TIMEOUT_MS) =>
   ])
 
 export async function fetchSiteSettingsQuery() {
-  if (!supabase) return null
-  const { data, error } = await withTimeout(
-    supabase.from('site_settings').select('*').eq('id', SETTINGS_ID).single()
-  )
-  if (error) return null
-  return data
+  try {
+    const data = await withTimeout(api.getSiteSettings())
+    return data
+  } catch (e) {
+    console.warn('[fetchSiteSettingsQuery]', e.message)
+    return null
+  }
 }
 
 export async function fetchProjectsQuery(opts = {}) {
-  if (!supabase) {
-    console.error('[fetchProjectsQuery] Supabase не подключен!')
-    console.error('[fetchProjectsQuery] VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL ? '✅ задан' : '❌ отсутствует')
-    console.error('[fetchProjectsQuery] VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅ задан' : '❌ отсутствует')
-    return []
-  }
-  let q = supabase
-    .from('projects')
-    .select('id,slug,name,subtitle,cover_image_url,show_on_home,created_at,updated_at')
-    .order('created_at', { ascending: false })
-  if (opts.onlyShowOnHome) q = q.eq('show_on_home', true)
   try {
-    const { data, error } = await withTimeout(q)
-    if (error) {
-      console.error('[fetchProjectsQuery] Ошибка Supabase:', error)
-      console.error('[fetchProjectsQuery] Код:', error.code, 'Сообщение:', error.message)
-      return []
-    }
-    console.log('[fetchProjectsQuery] Загружено проектов:', data?.length || 0)
-    return data ?? []
+    const data = await withTimeout(api.getProjects(opts))
+    const list = Array.isArray(data) ? data : []
+    return list
   } catch (e) {
-    console.error('[fetchProjectsQuery] Исключение:', e.message)
+    console.error('[fetchProjectsQuery]', e.message)
     return []
   }
 }
 
 export async function fetchProjectBySlugQuery(slug) {
-  if (!supabase || !slug) return null
-  const { data, error } = await withTimeout(
-    supabase
-      .from('projects')
-      .select('*, project_media(id,project_id,type,image_url_1,image_url_2,sort_order)')
-      .eq('slug', slug)
-      .single()
-  )
-  if (error || !data) return null
-  const { project_media, ...project } = data
-  const media = [...(project_media ?? [])].sort(
-    (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
-  )
-  return { ...project, media }
+  if (!slug) return null
+  try {
+    const data = await withTimeout(api.getProjectBySlug(slug))
+    if (!data) return null
+    const media = [...(data.media || [])].sort(
+      (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    )
+    return { ...data, media }
+  } catch (e) {
+    console.warn('[fetchProjectBySlugQuery]', e.message)
+    return null
+  }
 }
 
 export async function fetchMarqueeLogosQuery() {
-  if (!supabase) return []
-  const { data, error } = await withTimeout(
-    supabase.from('marquee_logos').select('id,url,alt,sort_order').order('sort_order')
-  )
-  if (error) return []
-  return data ?? []
+  try {
+    const data = await withTimeout(api.getMarqueeLogos())
+    return Array.isArray(data) ? data : []
+  } catch (e) {
+    console.warn('[fetchMarqueeLogosQuery]', e.message)
+    return []
+  }
 }
